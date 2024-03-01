@@ -37,6 +37,7 @@ ProSense includes a variety of preprocessing and feature extraction techniques s
 - **BVP Data**: Analyzes cardiovascular indicators such as HRV.
 - **GSR Data**: Examines skin conductance responses.
 - **TEMP Data**: Processes temperature-related data for variability and trends.
+  
   ![Features](https://github.com/siddhant61/ProSense/blob/master/images/Slide31.JPG)
 
 ## Data Analysis Process Overview
@@ -50,12 +51,15 @@ ProSense follows a structured data analysis pipeline, which is outlined in the i
 - Automatic and Manual Visualization
 - Outlier Rejection
 - Identification of Significant Features
+  
   ![System Architecture](https://github.com/siddhant61/ProSense/blob/master/images/Slide30.JPG)
 
 ## Visualization and Reporting
 
 ProSense offers both automatic and manual visualization capabilities to facilitate the exploration and interpretation of the processed data.
-Some of the plots inlcuding bar plots, time series plots, box plots from a study have been show below.
+
+A study was conducted to observe the effect of mental workload on stress and validate the efficacy of yoga in reducing stress. ProSense was used to process the study data, resulting in the classification of mental workload and stress, validating the effectiveness of yoga in stress reduction. Insightful data visualizations, including bar plots, time series plots, and box plots, were utilized to present the results, demonstrating yoga's potential to lower stress levels as part of the study's conclusive evidence. 
+
 ![Bar Plot](https://github.com/siddhant61/ProSense/blob/master/images/Slide35.JPG)
 ![Line Plot](https://github.com/siddhant61/ProSense/blob/master/images/Slide36.JPG)
 ![Line Plot Grouped](https://github.com/siddhant61/ProSense/blob/master/images/Slide41.JPG)
