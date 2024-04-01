@@ -9,8 +9,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from load_data import LoadData
 
-user_id_mapping = {'pb': 'P1', 'kk': 'P2', 'bz': 'P3', 'fk': 'P4', 'tv': 'P5',
-                   'gi': 'P6', 'pd': 'P7', 'pn': 'P8', 'jk': 'P9', 'ka': 'P10'}
+user_id_mapping = pd.read_csv('D:/Study Data/user_mapping.csv')
 
 def flatten_eeg_features(eeg_features_dict, session, log_map):
     dfs = []
@@ -252,11 +251,11 @@ if __name__ == '__main__':
 
     loader = LoadData()
 
-    initial_path = "D:/Study Data/bz_fk/session_1/datasets/ProcessedData/Features/"
-    inital_log_path = "D:/Study Data/bz_fk/session_1/datasets/ProcessedData/Events/events.pkl"
-    initial_log_files = "D:/Study Data/bz_fk/session_1/logs/ProcessedLogs/"
+    initial_path = "D:/Study Data/set_1/session_1/datasets/ProcessedData/Features/"
+    inital_log_path = "D:/Study Data/set_1/session_1/datasets/ProcessedData/Events/events.pkl"
+    initial_log_files = "D:/Study Data/set_1/session_1/logs/ProcessedLogs/"
 
-    initial_log_map = "D:/Study Data/bz_fk/session_1/datasets/ProcessedData/Events/log_map.pkl"
+    initial_log_map = "D:/Study Data/set_1/session_1/datasets/ProcessedData/Events/log_map.pkl"
 
     sessions = 5
 
@@ -382,5 +381,5 @@ if __name__ == '__main__':
 
     for feature_type in all_sessions_data:
         combined_df = pd.concat(all_sessions_data[feature_type], ignore_index=True)
-        combined_df.to_csv(f'D:/Study Data/bz_fk/{feature_type}_all_sessions.csv', index=False)
+        combined_df.to_csv(f'D:/Study Data/set_1/{feature_type}_all_sessions.csv', index=False)
 
