@@ -190,7 +190,7 @@ def save_figures(figs, titles, name, save_path):
 
 
 def main():
-    session_folders = ['D:/Study Data/bz_fk', 'D:/Study Data/jk_ka', 'D:/Study Data/pb_kk', 'D:/Study Data/pd_pn', 'D:/Study Data/tv_gi']
+    session_folders = ['D:/Study Data/set_1', 'D:/Study Data/set_2', 'D:/Study Data/set_3', 'D:/Study Data/set_4', 'D:/Study Data/set_5']
     combined_datasets = combine_datasets_by_stream_type(session_folders)
 
     averaged_data = {}
@@ -209,119 +209,9 @@ def main():
             save_figures(figures, titles, f"{stream_type}_{feature}", "D:/Study Data/plots")
 
 
-# def main():
-#     session_folders = ['D:/Study Data/bz_fk', 'D:/Study Data/jk_ka', 'D:/Study Data/pb_kk', 'D:/Study Data/pd_pn', 'D:/Study Data/tv_gi']
-#     combined_datasets = combine_datasets_by_stream_type(session_folders)
-#
-#     averaged_data = {}
-#
-#     non_feature_cols = ['stream_id', 'epoch', 'user_id', 'event_name', 'timestamp', 'event_timestamp', 'event_type',
-#                         'timedelta', 'metadata']
-#
-#     for stream_type, dataset in combined_datasets.items():
-#         # dataset.to_csv(f'D:/Study Data/{stream_type}_all_data.csv', index=False)
-#         averaged_data[stream_type] = average_data_across_users(dataset, non_feature_cols)
-#         print(averaged_data[stream_type].head())
-#
-#     selected_events = [
-#         'start_BRUMS', 'parity_set_1', 'dualt_acc_1', 'individualization_acc_1',
-#         'final_test_set_1_instr', 'final_test_instr', 'childs_pose_1',
-#         'low_lunge_1', 'cobra_pose_1', 'low_lunge_2', 'cobra_pose_2',
-#         'tree_pose_1', 'high_lunge_1', 'childs_pose_4', 'savasana_1', 'closing_chant_1'
-#     ]
-#
-#     selected_types = ['Instruction Events', 'Sync Events', 'Zero Score Trials', 'Accuracy Events', 'Yoga Poses']
-
-    # plot_features_per_session_and_phase(averaged_data['eeg'], non_feature_cols,
-    #                             selected_events=selected_events)
-    # plot_features_per_session_and_phase(averaged_data['gsr'], non_feature_cols,
-    #                             selected_events=selected_events)
-    # plot_features_per_session_and_phase(averaged_data['gyro'], non_feature_cols,
-    #                             selected_events=selected_events)
-    # plot_features_per_session_and_phase(averaged_data['ppg'], non_feature_cols,
-    #                             selected_events=selected_events)
-    # plot_features_per_session_and_phase(averaged_data['temp'], non_feature_cols,
-    #                             selected_events=selected_events)
-    # plot_features_per_session_and_phase(averaged_data['acc'], non_feature_cols,
-    #                             selected_events=selected_events)
-    # plot_features_per_session_and_phase(averaged_data['bvp'], non_feature_cols,
-    #                             selected_events=selected_events)
-
-    # 'BVP', f'D:/Study Data/plots',
-    # 'ACC', f'D:/Study Data/plots',
-    # 'TEMP', f'D:/Study Data/plots',
-    # 'PPG', f'D:/Study Data/plots',
-    # 'GYRO', f'D:/Study Data/plots',
-    # 'GSR', f'D:/Study Data/plots',
-    # 'EEG', f'D:/Study Data/plots',
-
-    # plot_individual_user_sensor_events(merged_acc, 'time_features_x_mean', 'kk', selected_events)
-
-
-
-    # plot_combined_user_sensor_events_with_markers(merged_acc, 'time_features_x_mean', 'kk')
-
-
 if __name__ == '__main__':
     main()
 
 
 
-# def plot_features_for_all_users(merged_data, non_feature_columns,type, save_path , selected_events=None, selected_event_types=None):
-#     """
-#     Plots all features for each user in the merged data.
-#
-#     :param merged_data: DataFrame containing the merged data.
-#     :param non_feature_columns: List of columns that are not features.
-#     :param selected_events: (Optional) List of specific event names to include in the plot.
-#     :param selected_event_types: (Optional) List of specific event types to include in the plot.
-#     """
-#     feature_columns = [col for col in merged_data.columns if col not in non_feature_columns]
-#     users = merged_data['user_id'].unique()
-#
-#     for user_id in users:
-#         for feature in feature_columns:
-#             if selected_event_types:
-#                 fig, title = plot_features_per_session_and_phase(merged_data, feature, user_id, selected_event_types)
-#                 save_figures([fig], [title], f'{type}', save_path)
-#             elif selected_events:
-#                 fig, title = plot_features_per_session_and_phase(merged_data, feature, user_id, selected_events)
-#                 save_figures([fig], [title], f'{type}', save_path)
-#             else:
-#                 # Default plot if no specific events or event types are provided
-#                 fig, title = plot_features_per_session_and_phase(merged_data, feature, user_id, selected_events)
-#                 save_figures([fig], [title], f'{type}', save_path)
-#
-#
-# def plot_features_per_session_and_phase(averaged_data, non_feature_columns, selected_events=None):
-#     """
-#     Plots all features for each session and phase in the averaged data.
-#
-#     :param averaged_data: DataFrame containing the averaged data.
-#     :param non_feature_columns: List of columns that are not features.
-#     :param selected_events: (Optional) List of specific event names to include in the plot.
-#     """
-#     feature_columns = [col for col in averaged_data.columns if col not in non_feature_columns]
-#     sessions = averaged_data['session'].unique()
-#     phases = averaged_data['phase'].unique()
-#
-#     for session in sessions:
-#         for phase in phases:
-#             session_phase_data = averaged_data[
-#                 (averaged_data['session'] == session) & (averaged_data['phase'] == phase)]
-#             for feature in feature_columns:
-#                 fig, ax = plt.subplots(figsize=(10, 6))
-#                 sns.lineplot(data=session_phase_data, x='epoch', y=feature, ax=ax, marker='o', label=f'Session {session}, {phase}')
-#
-#                 # Marking the events if specified
-#                 if selected_events:
-#                     for _, row in session_phase_data.iterrows():
-#                         if row['event_name'] in selected_events:
-#                             ax.axvline(x=row['epoch'], color='grey', alpha=0.5, linestyle='--')
-#                             ax.text(row['epoch'], ax.get_ylim()[1], row['event_name'], fontsize=9, verticalalignment='top', rotation=45)
-#
-#                 ax.set_title(f"{feature} Averages Over Sessions and Phases")
-#                 ax.set_xlabel('Epoch')
-#                 ax.set_ylabel(feature)
-#                 ax.legend(loc='upper right')
-#                 plt.show()
+
