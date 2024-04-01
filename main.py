@@ -402,8 +402,8 @@ def process_temp(files, temp_datasets, loader):
 if __name__ == '__main__':
     loader = LoadData()
 
-    initial_path = "D:/Study Data/tv_gi/session_1/datasets/"
-    inital_log_path = "D:/Study Data/tv_gi/session_1/logs/ProcessedLogs/"
+    initial_path = "D:/Study Data/set_1/session_1/datasets/"
+    inital_log_path = "D:/Study Data/set_1/session_1/logs/ProcessedLogs/"
     sessions = 5
 
     for i in range(5,sessions+1):
