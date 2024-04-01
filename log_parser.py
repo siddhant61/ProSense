@@ -709,7 +709,7 @@ class LogParser:
                     major_events_df.to_csv(f'{self.folder_path}/ProcessedLogs/{key}_events.csv', index=False)
 
 
-folder_path = 'D:/Study Data/tv_gi/session_4/logs/'
+folder_path = 'D:/Study Data/set_1/session_1/logs/'
 output_folder = Path(f'{folder_path}ProcessedLogs/')
 output_folder.mkdir(parents=True, exist_ok=True)
 log_parser = LogParser(folder_path)
