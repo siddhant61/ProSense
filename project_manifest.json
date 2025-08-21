@@ -1,0 +1,268 @@
+[
+    {
+        "path": "./project_manifest.json",
+        "size_bytes": 0,
+        "last_modified": "2025-08-21 11:29:10.268377015 +0000",
+        "type": ".json",
+        "category": "Configuration"
+    },
+    {
+        "path": "./prepro_data.py",
+        "size_bytes": 22681,
+        "last_modified": "2025-08-21 11:25:37.471663391 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    },
+    {
+        "path": "./main.py",
+        "size_bytes": 18988,
+        "last_modified": "2025-08-21 11:25:37.467663043 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    },
+    {
+        "path": "./correlate_datasets.py",
+        "size_bytes": 9364,
+        "last_modified": "2025-08-21 11:25:37.455661999 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    },
+    {
+        "path": "./images/Slide41.JPG",
+        "size_bytes": 123617,
+        "last_modified": "2025-08-21 11:25:37.467663043 +0000",
+        "type": ".JPG",
+        "category": "Image Asset"
+    },
+    {
+        "path": "./images/Slide30.JPG",
+        "size_bytes": 112501,
+        "last_modified": "2025-08-21 11:25:37.455661999 +0000",
+        "type": ".JPG",
+        "category": "Image Asset"
+    },
+    {
+        "path": "./images/Slide39.JPG",
+        "size_bytes": 91901,
+        "last_modified": "2025-08-21 11:25:37.463662695 +0000",
+        "type": ".JPG",
+        "category": "Image Asset"
+    },
+    {
+        "path": "./images/Slide35.JPG",
+        "size_bytes": 98742,
+        "last_modified": "2025-08-21 11:25:37.459662347 +0000",
+        "type": ".JPG",
+        "category": "Image Asset"
+    },
+    {
+        "path": "./images/Slide31.JPG",
+        "size_bytes": 190077,
+        "last_modified": "2025-08-21 11:25:37.459662347 +0000",
+        "type": ".JPG",
+        "category": "Image Asset"
+    },
+    {
+        "path": "./images/Slide36.JPG",
+        "size_bytes": 111072,
+        "last_modified": "2025-08-21 11:25:37.463662695 +0000",
+        "type": ".JPG",
+        "category": "Image Asset"
+    },
+    {
+        "path": "./images/Slide37.JPG",
+        "size_bytes": 85952,
+        "last_modified": "2025-08-21 11:25:37.463662695 +0000",
+        "type": ".JPG",
+        "category": "Image Asset"
+    },
+    {
+        "path": "./images/Slide40.JPG",
+        "size_bytes": 85884,
+        "last_modified": "2025-08-21 11:25:37.467663043 +0000",
+        "type": ".JPG",
+        "category": "Image Asset"
+    },
+    {
+        "path": "./load_features.py",
+        "size_bytes": 17198,
+        "last_modified": "2025-08-21 11:25:37.467663043 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    },
+    {
+        "path": "./.idea/misc.xml",
+        "size_bytes": 196,
+        "last_modified": "2025-08-21 11:25:37.451661651 +0000",
+        "type": ".xml",
+        "category": "Configuration"
+    },
+    {
+        "path": "./.idea/.gitignore",
+        "size_bytes": 47,
+        "last_modified": "2025-08-21 11:25:37.451661651 +0000",
+        "type": "",
+        "category": "Configuration"
+    },
+    {
+        "path": "./.idea/inspectionProfiles/profiles_settings.xml",
+        "size_bytes": 174,
+        "last_modified": "2025-08-21 11:25:37.451661651 +0000",
+        "type": ".xml",
+        "category": "Configuration"
+    },
+    {
+        "path": "./.idea/vcs.xml",
+        "size_bytes": 180,
+        "last_modified": "2025-08-21 11:25:37.451661651 +0000",
+        "type": ".xml",
+        "category": "Configuration"
+    },
+    {
+        "path": "./.idea/modules.xml",
+        "size_bytes": 268,
+        "last_modified": "2025-08-21 11:25:37.451661651 +0000",
+        "type": ".xml",
+        "category": "Configuration"
+    },
+    {
+        "path": "./.idea/ProSense.iml",
+        "size_bytes": 352,
+        "last_modified": "2025-08-21 11:25:37.451661651 +0000",
+        "type": ".iml",
+        "category": "Configuration"
+    },
+    {
+        "path": "./.idea/.name",
+        "size_bytes": 13,
+        "last_modified": "2025-08-21 11:25:37.451661651 +0000",
+        "type": "",
+        "category": "Configuration"
+    },
+    {
+        "path": "./modalities/prepro_ppg.py",
+        "size_bytes": 6338,
+        "last_modified": "2025-08-21 11:25:37.471663391 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    },
+    {
+        "path": "./modalities/prepro_bvp.py",
+        "size_bytes": 9697,
+        "last_modified": "2025-08-21 11:25:37.471663391 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    },
+    {
+        "path": "./modalities/featex_temp.py",
+        "size_bytes": 3914,
+        "last_modified": "2025-08-21 11:25:37.471663391 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    },
+    {
+        "path": "./modalities/featex_ppg.py",
+        "size_bytes": 10635,
+        "last_modified": "2025-08-21 11:25:37.471663391 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    },
+    {
+        "path": "./modalities/featex_bvp.py",
+        "size_bytes": 6918,
+        "last_modified": "2025-08-21 11:25:37.471663391 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    },
+    {
+        "path": "./modalities/prepro_temp.py",
+        "size_bytes": 6223,
+        "last_modified": "2025-08-21 11:25:37.471663391 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    },
+    {
+        "path": "./modalities/prepro_eeg.py",
+        "size_bytes": 9362,
+        "last_modified": "2025-08-21 11:25:37.471663391 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    },
+    {
+        "path": "./modalities/featex_eeg.py",
+        "size_bytes": 61556,
+        "last_modified": "2025-08-21 11:25:37.471663391 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    },
+    {
+        "path": "./modalities/prepro_gsr.py",
+        "size_bytes": 6065,
+        "last_modified": "2025-08-21 11:25:37.471663391 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    },
+    {
+        "path": "./modalities/featex_acc.py",
+        "size_bytes": 7197,
+        "last_modified": "2025-08-21 11:25:37.471663391 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    },
+    {
+        "path": "./modalities/featex_gyro.py",
+        "size_bytes": 13498,
+        "last_modified": "2025-08-21 11:25:37.471663391 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    },
+    {
+        "path": "./modalities/prepro_gyro.py",
+        "size_bytes": 6246,
+        "last_modified": "2025-08-21 11:25:37.471663391 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    },
+    {
+        "path": "./modalities/featex_gsr.py",
+        "size_bytes": 4487,
+        "last_modified": "2025-08-21 11:25:37.471663391 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    },
+    {
+        "path": "./modalities/prepro_acc.py",
+        "size_bytes": 6598,
+        "last_modified": "2025-08-21 11:25:37.471663391 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    },
+    {
+        "path": "./correlate_features.py",
+        "size_bytes": 16262,
+        "last_modified": "2025-08-21 11:25:37.455661999 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    },
+    {
+        "path": "./README.md",
+        "size_bytes": 3260,
+        "last_modified": "2025-08-21 11:25:37.451661651 +0000",
+        "type": ".md",
+        "category": "Documentation"
+    },
+    {
+        "path": "./log_parser.py",
+        "size_bytes": 34652,
+        "last_modified": "2025-08-21 11:25:37.467663043 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    },
+    {
+        "path": "./load_data.py",
+        "size_bytes": 11679,
+        "last_modified": "2025-08-21 11:25:37.467663043 +0000",
+        "type": ".py",
+        "category": "Source Code"
+    }
+]
