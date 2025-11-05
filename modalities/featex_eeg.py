@@ -1,4 +1,34 @@
 
+"""
+EEG Feature Extraction Module
+
+This module provides comprehensive feature extraction capabilities for EEG signals including
+frequency domain features, time-frequency analysis, coherence analysis, and statistical features.
+
+EEG feature extraction transforms preprocessed epochs into meaningful metrics for:
+- Cognitive state classification (attention, workload, drowsiness)
+- Brain-computer interfaces (BCI)
+- Sleep stage classification
+- Seizure detection
+- Mental workload assessment
+- Emotion recognition
+
+Key feature categories:
+- Power band features (delta, theta, alpha, beta, gamma)
+- Power band ratios (theta/delta, alpha/theta, etc.)
+- Spectral entropy (signal complexity measure)
+- Power spectral density (PSD) features
+- Coherence features (connectivity between channels)
+- Time-frequency features (TFR)
+- Statistical features (mean, variance, skewness, kurtosis)
+
+Classes:
+    FeatExEEG: Main feature extraction class for EEG signals
+
+Author: ProSense Contributors
+Date: 2024
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -11,10 +41,54 @@ from scipy.stats import kurtosis, skew
 
 
 class FeatExEEG:
+    """
+    Feature extraction class for EEG data.
+
+    Extracts a comprehensive set of frequency-domain, time-frequency, and statistical
+    features from preprocessed EEG epochs for machine learning and analysis.
+
+    Attributes:
+        freq_bands (np.ndarray): Logarithmically spaced frequency bands for analysis
+
+    Example:
+        >>> featex = FeatExEEG()
+        >>> features = featex.extract_features(preprocessed_dataset)
+        >>> power_ratios = features['power_band_ratios']
+    """
     def __init__(self):
+        """Initialize EEG feature extractor with default frequency bands."""
         self.freq_bands = np.logspace(*np.log10([1, 35]), num=9)
 
     def extract_power_band_ratios(self, epochs):
+        """
+        Extract power band ratios from EEG epochs.
+
+        Computes power in classical EEG frequency bands and their ratios,
+        which are useful indicators of cognitive states.
+
+        Args:
+            epochs (mne.Epochs): Preprocessed EEG epochs
+
+        Returns:
+            dict: Nested dictionary with structure:
+                {epoch_idx: {channel_name: {band_power, band_ratios}}}
+
+        Bands extracted:
+            - delta (1-4 Hz): Deep sleep, unconsciousness
+            - theta (4-8 Hz): Drowsiness, meditation
+            - alpha (8-12 Hz): Relaxed wakefulness
+            - low_beta (12-15 Hz): Active thinking
+            - high_beta (15-30 Hz): Alertness, anxiety
+
+        Ratios computed:
+            - theta/delta: Drowsiness indicator
+            - alpha/theta: Relaxation vs drowsiness
+            - beta/alpha: Alertness indicator
+
+        Note:
+            Higher theta/delta ratio indicates drowsiness
+            Higher beta/alpha ratio indicates mental activation
+        """
         power_band_ratios = {}
 
         # Define power bands (example bands)
@@ -54,6 +128,26 @@ class FeatExEEG:
         return power_band_ratios
 
     def extract_spectral_entropy(self, epochs, sfreq):
+        """
+        Extract spectral entropy from EEG epochs.
+
+        Spectral entropy quantifies the complexity/irregularity of the EEG signal.
+        Lower entropy indicates more regular/predictable signals (e.g., during sleep),
+        higher entropy indicates more complex/irregular signals (e.g., during active cognition).
+
+        Args:
+            epochs (mne.Epochs): Preprocessed EEG epochs
+            sfreq (float): Sampling frequency in Hz
+
+        Returns:
+            dict: {epoch_idx: {channel_name: spectral_entropy_value}}
+
+        Note:
+            - Range: 0 to log2(N) where N is number of frequency bins
+            - Lower values: More regular signal (sleep, meditation)
+            - Higher values: More complex signal (active thinking, eyes open)
+            - Useful for drowsiness detection and cognitive load assessment
+        """
         spectral_entropy = {}
 
         # Iterate over epochs
@@ -176,7 +270,47 @@ class FeatExEEG:
 
 
     def extract_features(self, dataset):
-        """Extract various features from the EEG data."""
+        """
+        Extract comprehensive feature set from EEG dataset.
+
+        Main orchestration method that extracts all feature types from preprocessed
+        EEG epochs. This is the primary entry point for EEG feature extraction.
+
+        Args:
+            dataset (dict): Preprocessed dataset with structure:
+                {file_id: {'epochs': mne.Epochs, 'sfreq': float}}
+
+        Returns:
+            dict: Comprehensive feature dictionary with structure:
+                {file_id: {
+                    'power_band_ratios': {...},
+                    'spectral_entropy': {...},
+                    'psd_features': {...},
+                    'coherence_features': {...},
+                    'tfr_features': {...},
+                    'statistical_features': {...}
+                }}
+
+        Features extracted:
+            1. Power band ratios: Delta, theta, alpha, beta band powers and their ratios
+            2. Spectral entropy: Signal complexity measure
+            3. PSD features: Power spectral density characteristics
+            4. Coherence features: Inter-channel connectivity measures
+            5. Time-frequency features: Wavelet-based TFR analysis
+            6. Statistical features: Mean, variance, skewness, kurtosis per epoch
+
+        Example:
+            >>> featex = FeatExEEG()
+            >>> features = featex.extract_features(preprocessed_data)
+            >>> # Access specific features
+            >>> power_ratios = features['file1']['power_band_ratios']
+            >>> entropy = features['file1']['spectral_entropy']
+
+        Note:
+            - Input must be preprocessed (filtered, epoched) EEG data
+            - Returns nested dictionaries for flexible feature selection
+            - Suitable for machine learning pipeline integration
+        """
         all_features = {}
 
 
