@@ -1,3 +1,36 @@
+"""
+Photoplethysmography (PPG) Feature Extraction Module
+
+This module provides comprehensive feature extraction capabilities for multi-channel PPG
+signals including heart rate (HR), heart rate variability (HRV), pulse rate variability (PRV),
+amplitude, and location-specific features.
+
+PPG (Photoplethysmography) measures blood volume changes in microvascular tissue using
+optical sensors. Light absorption varies with blood volume, creating a pulsatile waveform
+that reflects cardiovascular activity.
+
+PPG features are useful for:
+- Continuous heart rate monitoring
+- Heart rate variability (HRV/PRV) analysis for stress and autonomic function
+- Blood oxygen saturation estimation (SpO2 when combined with multi-wavelength PPG)
+- Blood pressure estimation
+- Vascular health assessment (arterial stiffness)
+- Respiratory rate extraction
+- Atrial fibrillation detection
+- Perfusion monitoring
+
+Signal characteristics:
+- Pulsatile (AC) component: Synchronous with heartbeat
+- Baseline (DC) component: Reflects tissue absorption and venous blood
+- Multi-channel: Improves signal quality and enables advanced analysis
+
+Classes:
+    FeatExPPG: Main feature extraction class for multi-channel PPG signals
+
+Author: ProSense Contributors
+Date: 2024
+"""
+
 import numpy as np
 import pandas as pd
 from scipy.signal import find_peaks, medfilt
@@ -5,10 +38,47 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 class FeatExPPG:
+    """
+    Feature extraction class for multi-channel Photoplethysmography (PPG) data.
+
+    Extracts HR, HRV, PRV, amplitude, and location-specific features from
+    preprocessed 3-channel PPG epochs for cardiovascular monitoring.
+
+    Attributes:
+        dataset (dict): Preprocessed PPG dataset with epochs
+
+    Example:
+        >>> featex = FeatExPPG(preprocessed_ppg_data)
+        >>> features = featex.extract_features()
+        >>> print(features['stream_1']['hr_features'][0]['PPG1'])
+    """
     def __init__(self, dataset):
+        """
+        Initialize PPG feature extractor.
+
+        Args:
+            dataset (dict): Preprocessed dataset with structure:
+                {stream_id: {'epochs': [epoch_dataframes], 'sfreq': float}}
+        """
         self.dataset = dataset
 
     def calculate_heart_rate(self, epochs, sfreq, heart_rate_range=(40, 180)):
+        """
+        Calculate heart rate (HR) from PPG peaks with physiological validation.
+
+        Args:
+            epochs (list): List of PPG epoch DataFrames (3 channels)
+            sfreq (float): Sampling frequency in Hz
+            heart_rate_range (tuple): Valid HR range in BPM (default: 40-180)
+
+        Returns:
+            dict: HR for each epoch and channel {epoch_idx: {channel: {'heart_rate': float}}}
+
+        Note:
+            - Filters out implausible HR values outside physiological range
+            - Uses adaptive peak detection based on heart_rate_range
+            - Returns NaN when insufficient valid peaks detected
+        """
         features = {}
         for i, epoch in enumerate(epochs):
             features[i] = {}
@@ -34,6 +104,22 @@ class FeatExPPG:
         return features
 
     def calculate_hrv(self, epochs, sfreq, heart_rate_range=(40, 180)):
+        """
+        Calculate Heart Rate Variability (HRV) from PPG with median filtering.
+
+        Args:
+            epochs (list): List of PPG epoch DataFrames
+            sfreq (float): Sampling frequency in Hz
+            heart_rate_range (tuple): Valid HR range for filtering (default: 40-180)
+
+        Returns:
+            dict: HRV (SDNN) for each epoch and channel
+
+        Note:
+            - Applies median filter for noise reduction
+            - Validates peak intervals using HR range
+            - Returns None when insufficient valid intervals (<2)
+        """
         features = {}
         for i, epoch in enumerate(epochs):
             features[i] = {}
@@ -61,6 +147,23 @@ class FeatExPPG:
         return features
 
     def extract_prv(self, epochs, sfreq):
+        """
+        Extract Pulse Rate Variability (PRV) with robust outlier removal.
+
+        PRV is the PPG-derived equivalent of HRV, measuring variability in pulse intervals.
+
+        Args:
+            epochs (list): List of PPG epoch DataFrames
+            sfreq (float): Sampling frequency in Hz
+
+        Returns:
+            dict: PRV for each epoch and channel
+
+        Note:
+            - Uses MAD (Median Absolute Deviation) for outlier detection
+            - More robust than HRV to motion artifacts
+            - Highly correlated with HRV in resting conditions
+        """
         features = {}
         for i, epoch in enumerate(epochs):
             features[i] = {}
@@ -88,6 +191,20 @@ class FeatExPPG:
         return features
 
     def extract_amplitude(self, epochs):
+        """
+        Extract PPG pulse amplitude (peak-to-peak).
+
+        Args:
+            epochs (list): List of PPG epoch DataFrames
+
+        Returns:
+            dict: Amplitude for each epoch and channel
+
+        Note:
+            - Higher amplitude indicates stronger pulse/better perfusion
+            - Affected by sensor contact quality and vasodilation
+            - Useful for blood flow and perfusion assessment
+        """
         features = {}
         for i, epoch in enumerate(epochs):
             features[i] = {}
@@ -129,6 +246,25 @@ class FeatExPPG:
         return features
 
     def extract_features(self):
+        """
+        Extract comprehensive PPG features from all epochs.
+
+        Main entry point for PPG feature extraction. Processes all streams to extract
+        HR, HRV, PRV, amplitude, and location-specific features.
+
+        Returns:
+            dict: Features for each stream with structure:
+                {stream_id: {
+                    'hr_features': {epoch_idx: {channel: {'heart_rate': float}}},
+                    'hrv_features': {epoch_idx: {channel: {'hrv': float}}},
+                    'prv_features': {epoch_idx: {channel: {'prv': float}}},
+                    'amp_features': {epoch_idx: {channel: {'amplitude': float}}},
+                    'flow_features': {epoch_idx: {channel: {...}}} or None
+                }}
+
+        Note:
+            Multi-channel PPG enables signal quality assessment and redundancy
+        """
         all_features = {}
         for stream, data_info in self.dataset.items():
             sfreq = data_info['sfreq']
