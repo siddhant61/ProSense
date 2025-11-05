@@ -1,10 +1,68 @@
+"""
+Temperature (TEMP) Preprocessing Module
+
+This module provides preprocessing capabilities for skin temperature signals including
+smoothing, downsampling, normalization, and segmentation.
+
+Skin temperature signals measure peripheral body temperature, used for:
+- Thermoregulation and stress assessment
+- Sleep quality monitoring
+- Circadian rhythm analysis
+- Emotional state detection (temperature drops during stress)
+- Physical activity and recovery monitoring
+- Fever and illness detection
+
+Classes:
+    PreProTEMP: Main preprocessing class for temperature signals
+
+Author: ProSense Contributors
+Date: 2024
+"""
+
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
+
 class PreProTEMP:
+    """
+    Preprocessing class for skin Temperature (TEMP) data.
+
+    This class provides a complete preprocessing pipeline for temperature signals including:
+    - Smoothing using moving average (reduces sensor noise)
+    - Normalization (z-score standardization)
+    - Downsampling
+    - Segmentation into epochs
+
+    Attributes:
+        dataset (dict): Dictionary containing TEMP datasets with stream IDs as keys
+        min_sfreq (float): Minimum sampling frequency across all datasets (typically ~0.1-4 Hz)
+        sfreq (float): Current stream sampling frequency
+        data (pd.DataFrame): Current stream data being processed
+
+    Example:
+        >>> temp_data = {'stream_1': {'data': temp_df, 'sfreq': 4}}
+        >>> prepro = PreProTEMP(temp_data)
+        >>> processed = prepro.preprocess_temp_data(epoch_length=60)
+
+    Note:
+        Temperature is a very slow-changing signal (< 0.1 Hz typically)
+        Long epochs (60-300s) are recommended for meaningful analysis
+    """
 
     def __init__(self, dataset):
+        """
+        Initialize the TEMP preprocessing object.
+
+        Args:
+            dataset (dict): Dictionary of TEMP datasets where each entry contains:
+                - 'data': pandas DataFrame with temperature data (°C or °F)
+                - 'sfreq': Sampling frequency in Hz (typically 0.1-4 Hz)
+
+        Note:
+            Temperature typically sampled at very low rates as it changes slowly
+            Default fallback sampling rate is 2.5 Hz if not determinable
+        """
         self.dataset = dataset
         self.sfreq = None
         self.data= None
@@ -56,6 +114,20 @@ class PreProTEMP:
             return downsampled_data
 
     def smooth_data(self, window_size=5):
+        """
+        Smooth temperature data using moving average filter.
+
+        Args:
+            window_size (int): Size of moving average window (default: 5)
+
+        Returns:
+            array: Smoothed temperature signal
+
+        Note:
+            - Reduces sensor noise and rapid fluctuations
+            - Moving average preserves slow temperature trends
+            - Output length is len(input) - window_size + 1
+        """
         # Assuming self.data is a DataFrame and you are interested in the first column
         # You can change this to select a different column as needed
         if isinstance(self.data, pd.DataFrame):
@@ -66,10 +138,35 @@ class PreProTEMP:
         return np.convolve(data_series, np.ones((window_size,)) / window_size, mode='valid')
 
     def baseline_correction(self, data):
+        """
+        Remove linear baseline drift from temperature data.
+
+        Args:
+            data (array-like): Temperature signal with drift
+
+        Returns:
+            array: Drift-corrected temperature signal
+
+        Note:
+            Removes slow linear trends that may occur during long recordings
+        """
         linear_drift = np.linspace(0, np.mean(data), len(data))
         return data - linear_drift
 
     def normalize(self, data):
+        """
+        Normalize temperature data using min-max scaling to [0, 1] range.
+
+        Args:
+            data (array-like): Temperature data to normalize
+
+        Returns:
+            array: Normalized temperature values in [0, 1]
+
+        Note:
+            Formula: (x - min) / (max - min)
+            Useful for comparing temperature responses across participants
+        """
         return (data - np.min(data)) / (np.max(data) - np.min(data))
 
     def preprocess(self):
@@ -106,6 +203,35 @@ class PreProTEMP:
         return segments
 
     def preprocess_temp_data(self, epoch_length=5):
+        """
+        Complete temperature preprocessing pipeline.
+
+        Applies the full preprocessing workflow:
+        1. Downsampling to minimum sampling rate
+        2. Smoothing with moving average
+        3. Baseline drift correction
+        4. Normalization (min-max scaling to [0, 1])
+        5. Segmentation into epochs
+
+        Args:
+            epoch_length (float): Length of each epoch in seconds (default: 5)
+
+        Returns:
+            dict: Processed data for each stream containing:
+                - 'data': Smoothed, corrected, normalized temperature data
+                - 'epochs': List of segmented DataFrames
+                - 'sfreq': Final sampling frequency
+
+        Example:
+            >>> prepro = PreProTEMP(temp_dataset)
+            >>> processed = prepro.preprocess_temp_data(epoch_length=120)
+            >>> for stream_id, stream_data in processed.items():
+            ...     print(f"{stream_id}: {len(stream_data['epochs'])} epochs")
+
+        Note:
+            Very long epochs (60-300s) recommended for temperature as it changes slowly
+            Useful for circadian rhythm and sleep analysis
+        """
         processed_data = {}
         for stream_id, data_info in self.dataset.items():
             self.data = data_info['data']
