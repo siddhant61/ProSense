@@ -1,0 +1,25 @@
+# ProSense - Multimodal Physiological Signal Processing
+# Requirements file with pinned versions for reproducibility
+# Python 3.11+ required
+
+# Core Scientific Computing
+numpy==1.26.4
+scipy==1.11.4
+pandas==2.1.4
+
+# Signal Processing & Neuroscience
+mne==1.6.1
+
+# Visualization
+matplotlib==3.8.2
+seaborn==0.13.1
+
+# Configuration Management
+pyyaml==6.0.1
+
+# Development Dependencies (optional, uncomment if needed)
+# pytest==7.4.3
+# pytest-cov==4.1.0
+# black==23.12.1
+# flake8==7.0.0
+# mypy==1.8.0

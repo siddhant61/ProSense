@@ -24,15 +24,238 @@ class LoadData:
             'TEMP': ['TEMP'],
             'PPG': ['Ambient', 'IR', 'Red']
         }
-        pass
+
+    # ===== INPUT VALIDATION METHODS =====
+
+    def validate_file_exists(self, file_path):
+        """
+        Validate that a file exists at the given path.
+
+        Args:
+            file_path: Path to the file to check
+
+        Raises:
+            FileNotFoundError: If the file does not exist
+            ValueError: If the path is empty or invalid
+        """
+        if not file_path:
+            raise ValueError("File path cannot be empty")
+
+        path = Path(file_path)
+        if not path.exists():
+            raise FileNotFoundError(f"File not found: {file_path}")
+
+        if not path.is_file():
+            raise ValueError(f"Path is not a file: {file_path}")
+
+        return True
+
+    def validate_directory_exists(self, dir_path):
+        """
+        Validate that a directory exists at the given path.
+
+        Args:
+            dir_path: Path to the directory to check
+
+        Raises:
+            FileNotFoundError: If the directory does not exist
+            ValueError: If the path is empty or invalid
+        """
+        if not dir_path:
+            raise ValueError("Directory path cannot be empty")
+
+        path = Path(dir_path)
+        if not path.exists():
+            raise FileNotFoundError(f"Directory not found: {dir_path}")
+
+        if not path.is_dir():
+            raise ValueError(f"Path is not a directory: {dir_path}")
+
+        return True
+
+    def validate_file_extension(self, file_path, expected_ext):
+        """
+        Validate that a file has the expected extension.
+
+        Args:
+            file_path: Path to the file
+            expected_ext: Expected extension (e.g., '.pkl', '.csv')
+
+        Raises:
+            ValueError: If the file extension doesn't match
+        """
+        path = Path(file_path)
+        if path.suffix.lower() != expected_ext.lower():
+            raise ValueError(
+                f"Invalid file extension. Expected '{expected_ext}', got '{path.suffix}'"
+            )
+        return True
+
+    def validate_dataframe(self, data, min_rows=1, required_columns=None):
+        """
+        Validate that data is a proper DataFrame with expected structure.
+
+        Args:
+            data: Data to validate
+            min_rows: Minimum number of rows required
+            required_columns: List of required column names
+
+        Raises:
+            TypeError: If data is not a DataFrame
+            ValueError: If DataFrame doesn't meet requirements
+        """
+        if not isinstance(data, pd.DataFrame):
+            raise TypeError(f"Expected pandas DataFrame, got {type(data).__name__}")
+
+        if data.empty:
+            raise ValueError("DataFrame is empty")
+
+        if len(data) < min_rows:
+            raise ValueError(
+                f"DataFrame has insufficient data: {len(data)} rows (minimum: {min_rows})"
+            )
+
+        if required_columns:
+            missing_cols = set(required_columns) - set(data.columns)
+            if missing_cols:
+                raise ValueError(
+                    f"DataFrame missing required columns: {missing_cols}"
+                )
+
+        return True
+
+    def validate_timestamps(self, timestamps, check_monotonic=True):
+        """
+        Validate that timestamps are valid and properly formatted.
+
+        Args:
+            timestamps: Array or Series of timestamps
+            check_monotonic: Whether to check if timestamps are monotonically increasing
+
+        Raises:
+            ValueError: If timestamps are invalid
+        """
+        if len(timestamps) == 0:
+            raise ValueError("Timestamp array is empty")
+
+        # Convert to numpy array for consistent handling
+        if isinstance(timestamps, pd.Series):
+            timestamps_array = timestamps.values
+        elif isinstance(timestamps, np.ndarray):
+            timestamps_array = timestamps
+        else:
+            timestamps_array = np.array(timestamps)
+
+        # Check if timestamps are numeric
+        if not np.issubdtype(timestamps_array.dtype, np.number):
+            raise ValueError("Timestamps contain non-numeric values")
+
+        # Check for NaN or None values (only for numeric types)
+        if np.any(np.isnan(timestamps_array)):
+            raise ValueError("Timestamps contain NaN or None values")
+
+        # Check if timestamps are monotonically increasing
+        if check_monotonic:
+            if not np.all(np.diff(timestamps_array) > 0):
+                raise ValueError("Timestamps are not monotonically increasing")
+
+        return True
+
+    def validate_sampling_rate(self, sfreq, min_sfreq=1, max_sfreq=10000):
+        """
+        Validate that sampling rate is within reasonable bounds.
+
+        Args:
+            sfreq: Sampling frequency to validate
+            min_sfreq: Minimum acceptable sampling rate (Hz)
+            max_sfreq: Maximum acceptable sampling rate (Hz)
+
+        Raises:
+            ValueError: If sampling rate is invalid
+        """
+        if sfreq is None:
+            raise ValueError("Sampling rate cannot be None")
+
+        try:
+            sfreq = float(sfreq)
+        except (TypeError, ValueError):
+            raise ValueError(f"Invalid sampling rate type: {type(sfreq).__name__}")
+
+        if sfreq <= 0:
+            raise ValueError(f"Sampling rate must be positive, got {sfreq}")
+
+        if not (min_sfreq <= sfreq <= max_sfreq):
+            raise ValueError(
+                f"Sampling rate {sfreq} Hz is outside valid range "
+                f"[{min_sfreq}, {max_sfreq}] Hz"
+            )
+
+        return True
+
+    def validate_data_array(self, data, min_samples=1, max_channels=None):
+        """
+        Validate that data array has valid shape and values.
+
+        Args:
+            data: Numpy array or similar
+            min_samples: Minimum number of samples required
+            max_channels: Maximum number of channels allowed
+
+        Raises:
+            ValueError: If data array is invalid
+        """
+        if data is None:
+            raise ValueError("Data array cannot be None")
+
+        if not isinstance(data, (np.ndarray, pd.DataFrame, pd.Series)):
+            raise TypeError(
+                f"Expected numpy array or pandas object, got {type(data).__name__}"
+            )
+
+        if isinstance(data, np.ndarray):
+            if data.size == 0:
+                raise ValueError("Data array is empty")
+
+            if data.ndim > 0 and data.shape[-1] < min_samples:
+                raise ValueError(
+                    f"Insufficient samples: {data.shape[-1]} (minimum: {min_samples})"
+                )
+
+            if max_channels and data.ndim > 1 and data.shape[0] > max_channels:
+                raise ValueError(
+                    f"Too many channels: {data.shape[0]} (maximum: {max_channels})"
+                )
+
+            # Check for NaN or Inf values
+            if np.any(np.isnan(data)):
+                raise ValueError("Data contains NaN values")
+
+            if np.any(np.isinf(data)):
+                raise ValueError("Data contains Inf values")
+
+        return True
 
     def load_csv(self, file_path, columns):
+        """Load CSV file with validation."""
+        # Validate input
+        self.validate_file_exists(file_path)
+        self.validate_file_extension(file_path, '.csv')
+
+        # Load data
         data = pd.read_csv(file_path, usecols=columns)
         data = data.dropna()  # Remove rows with NA values
+
+        # Validate loaded data
+        self.validate_dataframe(data, min_rows=1, required_columns=columns)
+
         return data
 
     def calculate_sfreq(self, timestamps):
+        """Calculate sampling frequency from timestamps with validation."""
         try:
+            # Validate timestamps
+            self.validate_timestamps(timestamps, check_monotonic=True)
+
             # Convert float Unix timestamps to datetime objects
             timestamps_datetime = [datetime.datetime.fromtimestamp(ts) for ts in timestamps]
 
@@ -46,11 +269,17 @@ class LoadData:
                 raise ValueError("Invalid timestamps: Cannot calculate sampling frequency.")
 
             sfreq = int(1 / avg_time_diff)
+
+            # Validate calculated sampling rate
+            self.validate_sampling_rate(sfreq)
+
             return sfreq
         except ValueError as e:
-            print(f"Timestamp conversion error: {e}")
+            print(f"Validation or timestamp conversion error: {e}")
+            raise
         except Exception as e:
             print(f"Unexpected error in calculate_sfreq: {e}")
+            raise
 
     def visualize_eeg_data(self, dataset):
         fig, axes = plt.subplots(len(dataset), figsize=(12, 6 * len(dataset)), sharex=True)
@@ -135,14 +364,66 @@ class LoadData:
         return dataset
 
     def save_pkl_dataset(self, all_features, file_path):
-        """Save the all_features dictionary to a file using pickle."""
+        """
+        Save the all_features dictionary to a file using pickle.
+
+        WARNING: Pickle is not secure against malicious data. Consider using
+        safer formats (HDF5, Parquet) for production use.
+
+        Args:
+            all_features: Data to save
+            file_path: Path where to save the file
+
+        Raises:
+            ValueError: If all_features is None or file_path is invalid
+        """
+        if all_features is None:
+            raise ValueError("Cannot save None data")
+
+        if not file_path:
+            raise ValueError("File path cannot be empty")
+
+        # Ensure parent directory exists
+        path = Path(file_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+
         with open(file_path, 'wb') as f:
             pickle.dump(all_features, f)
 
-    def load_pkl_dataset(self,file_path):
-        """Load the all_features dictionary from a file using pickle."""
-        with open(file_path, 'rb') as f:
-            dataset = pickle.load(f)
+    def load_pkl_dataset(self, file_path):
+        """
+        Load the all_features dictionary from a file using pickle.
+
+        WARNING: Pickle is not secure. Only load data from trusted sources.
+        Consider migrating to safer formats (HDF5, Parquet).
+
+        Args:
+            file_path: Path to the pickle file
+
+        Returns:
+            Loaded dataset
+
+        Raises:
+            FileNotFoundError: If file doesn't exist
+            ValueError: If file extension is wrong or data is invalid
+        """
+        # Validate input
+        self.validate_file_exists(file_path)
+        self.validate_file_extension(file_path, '.pkl')
+
+        # Load data
+        try:
+            with open(file_path, 'rb') as f:
+                dataset = pickle.load(f)
+        except pickle.UnpicklingError as e:
+            raise ValueError(f"Failed to unpickle file: {e}")
+        except Exception as e:
+            raise ValueError(f"Error loading pickle file: {e}")
+
+        # Validate loaded data
+        if dataset is None:
+            raise ValueError("Loaded dataset is None")
+
         return dataset
 
     def save_fif_dataset(self, dataset, filepath):
@@ -187,6 +468,22 @@ class LoadData:
         return dataset
 
     def process_datasets(self, folder_path):
+        """
+        Process datasets from a folder with validation.
+
+        Args:
+            folder_path: Path to folder containing datasets
+
+        Returns:
+            Path to output folder
+
+        Raises:
+            FileNotFoundError: If folder doesn't exist
+            ValueError: If folder is invalid
+        """
+        # Validate input
+        self.validate_directory_exists(folder_path)
+
         output_folder = Path(folder_path, "ProcessedData")
         output_folder.mkdir(parents=True, exist_ok=True)
 
@@ -194,8 +491,9 @@ class LoadData:
             if file.endswith('.pkl'):
                 dataset_type = os.path.splitext(file)[0]
                 dataset_path = os.path.join(folder_path, file)
-                with open(dataset_path, 'rb') as f:
-                    dataset = pickle.load(f)
+
+                # Use validated load method
+                dataset = self.load_pkl_dataset(dataset_path)
 
                 for dataset_name, content in dataset.items():
                     data_file_path = output_folder / f"{dataset_name}.csv"
