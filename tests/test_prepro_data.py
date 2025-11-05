@@ -509,3 +509,278 @@ class TestAddEventMarkers:
         # Verify marker was added
         assert len(annotated_raw.annotations) == 1
         assert annotated_raw.annotations.description[0] == 'Task1'
+
+
+class TestTrimRawData:
+    """Test suite for trim_raw_data method."""
+
+    @pytest.fixture
+    def prepro_instance(self, temp_dir):
+        """Create a PreProData instance with start_time set."""
+        instance = PreProData(temp_dir)
+        instance.start_time = datetime(2024, 1, 1, 10, 0, 0)
+        return instance
+
+    @pytest.mark.unit
+    def test_trim_raw_data_basic(self, prepro_instance):
+        """Test basic raw data trimming with markers."""
+        # Create MNE Raw data (10 seconds at 100 Hz)
+        n_channels = 2
+        n_samples = 1000
+        sfreq = 100.0
+        data = np.random.randn(n_channels, n_samples)
+        info = mne.create_info(ch_names=['CH1', 'CH2'], sfreq=sfreq, ch_types='eeg')
+        raw = mne.io.RawArray(data, info)
+
+        # Create markers (trim from 2s to 8s)
+        markers = [
+            ('Start', datetime(2024, 1, 1, 10, 0, 2), 'task', timedelta(seconds=0)),
+            ('End', datetime(2024, 1, 1, 10, 0, 8), 'task', timedelta(seconds=0))
+        ]
+
+        # Trim data
+        trimmed = prepro_instance.trim_raw_data(raw, markers)
+
+        # Verify trimming
+        assert isinstance(trimmed, mne.io.BaseRaw)
+        # Should be about 6 seconds of data (600 samples at 100 Hz)
+        assert 550 < trimmed.n_times < 650
+
+    @pytest.mark.unit
+    def test_trim_raw_data_empty_markers(self, prepro_instance):
+        """Test that empty markers return original data."""
+        n_channels = 2
+        n_samples = 500
+        sfreq = 100.0
+        data = np.random.randn(n_channels, n_samples)
+        info = mne.create_info(ch_names=['CH1', 'CH2'], sfreq=sfreq, ch_types='eeg')
+        raw = mne.io.RawArray(data, info)
+
+        # No markers
+        trimmed = prepro_instance.trim_raw_data(raw, [])
+
+        # Should return original data
+        assert trimmed == raw
+        assert trimmed.n_times == n_samples
+
+    @pytest.mark.unit
+    def test_trim_raw_data_with_duration(self, prepro_instance):
+        """Test trimming with marker duration included."""
+        n_channels = 2
+        n_samples = 1000
+        sfreq = 100.0
+        data = np.random.randn(n_channels, n_samples)
+        info = mne.create_info(ch_names=['CH1', 'CH2'], sfreq=sfreq, ch_types='eeg')
+        raw = mne.io.RawArray(data, info)
+
+        # Last marker has 2 second duration
+        markers = [
+            ('Start', datetime(2024, 1, 1, 10, 0, 1), 'task', timedelta(seconds=0)),
+            ('End', datetime(2024, 1, 1, 10, 0, 7), 'task', timedelta(seconds=2))
+        ]
+
+        trimmed = prepro_instance.trim_raw_data(raw, markers)
+
+        # Should trim to include duration (1s to 9s = 8 seconds)
+        assert isinstance(trimmed, mne.io.BaseRaw)
+        assert 750 < trimmed.n_times < 850
+
+    @pytest.mark.unit
+    def test_trim_raw_data_exceeds_data_length(self, prepro_instance, capsys):
+        """Test trimming when markers exceed data length."""
+        # Short raw data (2 seconds)
+        n_channels = 2
+        n_samples = 200
+        sfreq = 100.0
+        data = np.random.randn(n_channels, n_samples)
+        info = mne.create_info(ch_names=['CH1', 'CH2'], sfreq=sfreq, ch_types='eeg')
+        raw = mne.io.RawArray(data, info)
+
+        # Markers extend beyond data (trying to trim to 5 seconds)
+        markers = [
+            ('Start', datetime(2024, 1, 1, 10, 0, 0), 'task', timedelta(seconds=0)),
+            ('End', datetime(2024, 1, 1, 10, 0, 5), 'task', timedelta(seconds=0))
+        ]
+
+        trimmed = prepro_instance.trim_raw_data(raw, markers)
+
+        # Should handle gracefully and trim to max available
+        assert isinstance(trimmed, mne.io.BaseRaw)
+
+
+class TestDetectSpikesInWindow:
+    """Test suite for detect_spikes_in_window method."""
+
+    @pytest.fixture
+    def prepro_instance(self, temp_dir):
+        """Create a PreProData instance."""
+        return PreProData(temp_dir)
+
+    @pytest.mark.unit
+    def test_detect_spikes_in_window_basic(self, prepro_instance):
+        """Test basic spike detection in time window."""
+        # Create accelerometer data with a clear spike
+        timestamps = pd.date_range('2024-01-01 10:00:00', periods=100, freq='100ms')
+        acc_data = pd.DataFrame({
+            'x': np.random.randn(100) * 10,
+            'y': np.random.randn(100) * 10,
+            'z': np.random.randn(100) * 10 + 9.8
+        }, index=timestamps)
+
+        # Add a large spike in the middle
+        spike_idx = 50
+        acc_data.iloc[spike_idx] = [500, 500, 500]  # Large spike
+
+        # Detect spikes around middle time
+        target_time = timestamps[50]
+        spikes = prepro_instance.detect_spikes_in_window(
+            acc_data, target_time, window=5, spike_threshold=100.0
+        )
+
+        # Should detect the spike
+        assert len(spikes) > 0
+        assert timestamps[spike_idx] in spikes
+
+    @pytest.mark.unit
+    def test_detect_spikes_in_window_no_spikes(self, prepro_instance):
+        """Test that no spikes are detected in normal data."""
+        timestamps = pd.date_range('2024-01-01 10:00:00', periods=100, freq='100ms')
+        # Normal accelerometer data (no spikes)
+        acc_data = pd.DataFrame({
+            'x': np.random.randn(100) * 0.1,
+            'y': np.random.randn(100) * 0.1,
+            'z': np.ones(100) * 9.8 + np.random.randn(100) * 0.1
+        }, index=timestamps)
+
+        target_time = timestamps[50]
+        spikes = prepro_instance.detect_spikes_in_window(
+            acc_data, target_time, window=5, spike_threshold=100.0
+        )
+
+        # Should find no spikes
+        assert len(spikes) == 0
+
+    @pytest.mark.unit
+    def test_detect_spikes_in_window_multiple_spikes(self, prepro_instance):
+        """Test detection of multiple spikes with minimum interval."""
+        timestamps = pd.date_range('2024-01-01 10:00:00', periods=100, freq='100ms')
+        acc_data = pd.DataFrame({
+            'x': np.random.randn(100) * 10,
+            'y': np.random.randn(100) * 10,
+            'z': np.random.randn(100) * 10
+        }, index=timestamps)
+
+        # Add multiple spikes
+        acc_data.iloc[40] = [500, 500, 500]
+        acc_data.iloc[45] = [500, 500, 500]  # Too close (0.5s < min_interval)
+        acc_data.iloc[52] = [500, 500, 500]  # Far enough (1.2s > min_interval)
+
+        target_time = timestamps[50]
+        spikes = prepro_instance.detect_spikes_in_window(
+            acc_data, target_time, window=5, spike_threshold=100.0, min_spike_interval=1.0
+        )
+
+        # Should detect 2 spikes (40 and 52), skip 45 due to min_interval
+        assert len(spikes) >= 2
+
+    @pytest.mark.unit
+    def test_detect_spikes_in_window_empty_window(self, prepro_instance):
+        """Test spike detection with empty time window."""
+        timestamps = pd.date_range('2024-01-01 10:00:00', periods=100, freq='100ms')
+        acc_data = pd.DataFrame({
+            'x': np.random.randn(100) * 10,
+            'y': np.random.randn(100) * 10,
+            'z': np.random.randn(100) * 10
+        }, index=timestamps)
+
+        # Target time way outside data range
+        target_time = pd.Timestamp('2024-01-01 12:00:00')
+        spikes = prepro_instance.detect_spikes_in_window(
+            acc_data, target_time, window=5, spike_threshold=100.0
+        )
+
+        # Should return empty list
+        assert len(spikes) == 0
+
+
+class TestLoadEventLogsAndMarkers:
+    """Test suite for load_event_logs_and_markers method."""
+
+    @pytest.fixture
+    def prepro_instance(self, temp_dir):
+        """Create a PreProData instance."""
+        return PreProData(temp_dir)
+
+    @pytest.fixture
+    def sample_events_csv(self, temp_dir):
+        """Create a sample events CSV file."""
+        events_file = os.path.join(temp_dir, 'user1_m12345_e67890_events.csv')
+        df = pd.DataFrame({
+            'Marker': ['Start', 'Task1', 'Task2', 'End'],
+            'Start': [1704103200, 1704103210, 1704103220, 1704103230],  # Unix timestamps
+            'End': [1704103202, 1704103215, 1704103225, 1704103232],
+            'Category': ['Control', 'Task', 'Task', 'Control']
+        })
+        df.to_csv(events_file, index=False)
+        return temp_dir
+
+    @pytest.mark.unit
+    def test_load_event_logs_and_markers_basic(self, prepro_instance, sample_events_csv):
+        """Test loading event logs and markers from CSV."""
+        event_logs, event_markers = prepro_instance.load_event_logs_and_markers(sample_events_csv)
+
+        # Check that data was loaded
+        assert isinstance(event_logs, dict)
+        assert isinstance(event_markers, dict)
+        assert len(event_logs) > 0
+        assert len(event_markers) > 0
+
+        # Check structure
+        stream_id = 'user1_m12345_e67890'
+        assert stream_id in event_logs
+        assert stream_id in event_markers
+
+        # Check event markers structure
+        markers = event_markers[stream_id]
+        assert len(markers) == 4
+        # Each marker is (marker_name, time, category, duration)
+        assert len(markers[0]) == 4
+        assert markers[0][0] == 'Start'
+        assert markers[0][2] == 'Control'
+
+    @pytest.mark.unit
+    def test_load_event_logs_and_markers_with_yoga(self, prepro_instance, temp_dir):
+        """Test that Yoga Poses category gets time adjustment."""
+        events_file = os.path.join(temp_dir, 'user2_mabc_e123_events.csv')
+        df = pd.DataFrame({
+            'Marker': ['Pose1', 'Pose2'],
+            'Start': [1704103200, 1704103300],
+            'End': [1704103220, 1704103320],
+            'Category': ['Yoga Poses', 'Yoga Poses']
+        })
+        df.to_csv(events_file, index=False)
+
+        event_logs, event_markers = prepro_instance.load_event_logs_and_markers(temp_dir)
+
+        # Yoga Poses should have 120 second subtraction
+        stream_id = 'user2_mabc_e123'
+        markers = event_markers[stream_id]
+
+        # Original time minus 120 seconds
+        original_time = pd.to_datetime(1704103200, unit='s')
+        adjusted_time = markers[0][1]
+        time_diff = (original_time - adjusted_time).total_seconds()
+        assert time_diff == 120.0
+
+    @pytest.mark.unit
+    def test_load_event_logs_and_markers_empty_directory(self, prepro_instance, temp_dir):
+        """Test loading from directory with no event files."""
+        # Create empty subdirectory
+        empty_dir = os.path.join(temp_dir, 'empty')
+        os.makedirs(empty_dir)
+
+        event_logs, event_markers = prepro_instance.load_event_logs_and_markers(empty_dir)
+
+        # Should return empty dictionaries
+        assert event_logs == {}
+        assert event_markers == {}
