@@ -11,21 +11,48 @@ ProSense is a powerful data analysis tool designed for processing and interpreti
 - Streamlined data analysis process from loading to transformation and processing.
 
 ## Getting Started
-Clone the repository:
+
+### Prerequisites
+- Python 3.11 or higher
+- Git
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/siddhant61/ProSense.git
 ```
-git clone https://github.com/siddhant61/StreamSense.git
+
+2. Navigate to the ProSense directory:
+```bash
+cd ProSense
 ```
-Navigate to the StreamSense directory and install dependencies:
-```
-cd StreamSense
+
+3. Install dependencies:
+```bash
 pip install -r requirements.txt
 ```
+
+4. Configure your data paths:
+   - Open `config.yaml`
+   - Update `paths.data_root` to point to your data directory
+   - Adjust signal processing parameters as needed
+
 ## Quickstart Guide
-Running ProSense
-To start the ProSense application, run:
-```
+
+### Running ProSense
+
+Before running ProSense, ensure you have:
+1. Installed all dependencies
+2. Configured `config.yaml` with your data paths
+3. Your physiological data in the expected format (.pkl files)
+
+To start the ProSense application:
+```bash
 python main.py
 ```
+
+**Note**: You may need to modify `main.py` to specify which modalities to process and adjust paths according to your setup.
 
 ## Data Preprocessing and Feature Extraction
 

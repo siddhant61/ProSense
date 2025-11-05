@@ -25,6 +25,7 @@ from modalities.featex_bvp import FeatExBVP
 from modalities.featex_gyro import FeatExGYRO
 from modalities.featex_ppg import FeatExPPG
 from modalities.featex_temp import FeatExTEMP
+from config_loader import get_config
 
 
 def save_figures(figs, titles, name, save_path):
@@ -44,7 +45,8 @@ def save_figures(figs, titles, name, save_path):
 
 
 ##########################################EEG
-def process_eeg(files, eeg_datasets, loader):
+def process_eeg(files, eeg_datasets, loader, config):
+    """Process EEG data using parameters from config."""
 
     # Step 1: Initialize PreProEEG with your dataset
     prepro = PreProEEG(eeg_datasets)
@@ -52,17 +54,21 @@ def process_eeg(files, eeg_datasets, loader):
     save_figures(figs, titles, 'raw_data', f"{files}/Plots/EEG")
 
     # Step 2: Apply Downsampling
-    prepro.apply_downsampling(max_sfreq=200)
+    max_sfreq = config.get("eeg.preprocessing.max_sampling_rate", 200)
+    prepro.apply_downsampling(max_sfreq=max_sfreq)
     figs, titles = prepro.plot_eeg_data(eeg_datasets, "downsampled_data")
     save_figures(figs, titles, 'downsampled_data', f"{files}/Plots/EEG")
 
     # Step 3: Apply Notch Filter
-    prepro.apply_notch_filter(50)
+    notch_freq = config.get("eeg.preprocessing.notch_filter.frequency", 50)
+    prepro.apply_notch_filter(notch_freq)
     figs, titles = prepro.plot_eeg_data(eeg_datasets, "notch_filtered_data")
     save_figures(figs, titles, 'nf_data', f"{files}/Plots/EEG")
 
     # Step 4: Apply Bandpass Filter
-    prepro.apply_bandpass_filter(1, 40)
+    low_freq = config.get("eeg.preprocessing.bandpass_filter.low_freq", 1.0)
+    high_freq = config.get("eeg.preprocessing.bandpass_filter.high_freq", 40.0)
+    prepro.apply_bandpass_filter(low_freq, high_freq)
     figs, titles = prepro.plot_eeg_data(eeg_datasets, "bandpass_filtered_data")
     save_figures(figs, titles, 'bpf_data', f"{files}/Plots/EEG")
 
@@ -72,7 +78,8 @@ def process_eeg(files, eeg_datasets, loader):
     save_figures(figs, titles, 'artrej_data', f"{files}/Plots/EEG")
 
     # Step 6: Apply Epoching
-    prepro.apply_epoching(epoch_duration=5.0)
+    epoch_duration = config.get("eeg.preprocessing.epoch_duration", 5.0)
+    prepro.apply_epoching(epoch_duration=epoch_duration)
     figs, titles = prepro.plot_eeg_data(eeg_datasets, "epoched_data")
     save_figures(figs, titles, 'epoched_data', f"{files}/Plots/EEG")
 
@@ -87,7 +94,8 @@ def process_eeg(files, eeg_datasets, loader):
     # save_figures(figs, titles, 'threshold_data', f"{files}/Plots")
 
     # Step 9: Check for Normality
-    is_normal = prepro.check_normality(alpha=0.05)
+    normality_alpha = config.get("eeg.preprocessing.normality_alpha", 0.05)
+    is_normal = prepro.check_normality(alpha=normality_alpha)
     if is_normal:
         # Step 10: Apply Normalization
         prepro.apply_normalization()
@@ -137,7 +145,8 @@ def process_eeg(files, eeg_datasets, loader):
     save_figures(figs, titles, 'low_beta_power_band', f"{files}/Plots/EEG")
 
     ratio_names = ['alpha_power', 'alpha_theta_ratio', 'alpha_delta_ratio']
-    figs, titles = featex.plot_specific_epochs_power_band_ratios(extracted_features, [20,21,22,23, 24, 25, 26, 27, 28, 29] ,ratio_names)
+    epochs_to_plot = config.get("eeg.feature_extraction.epochs_to_plot", [20, 21, 22, 23, 24, 25, 26, 27, 28, 29])
+    figs, titles = featex.plot_specific_epochs_power_band_ratios(extracted_features, epochs_to_plot, ratio_names)
     save_figures(figs, titles, 'power_bands_ratio_epoch', f"{files}/Plots/EEG")
 
     ratio_names = ['alpha_power']
@@ -400,10 +409,14 @@ def process_temp(files, temp_datasets, loader):
 
 
 if __name__ == '__main__':
+    # Load configuration
+    config = get_config()
+
     loader = LoadData()
 
-    initial_path = "D:/Study Data/set_1/session_1/datasets/"
-    inital_log_path = "D:/Study Data/set_1/session_1/logs/ProcessedLogs/"
+    # Get paths from config instead of hardcoding
+    initial_path = str(config.get_path("paths.input.datasets"))
+    inital_log_path = str(config.get_path("paths.input.processed_logs"))
     sessions = 5
 
     for i in range(5,sessions+1):
@@ -450,7 +463,7 @@ if __name__ == '__main__':
             elif 'GSR' in stream_id:
                 gsr_datasets[stream_id] = data
 
-        process_eeg(files, eeg_datasets, loader)
+        process_eeg(files, eeg_datasets, loader, config)
 
         process_ppg(files, ppg_datasets, loader)
 
