@@ -464,3 +464,137 @@ class TestLoadDataIntegration:
             loaded_data['dataset1']['data'],
             original_data['dataset1']['data']
         )
+
+class TestLoadDataSignalProcessing:
+    """Test suite for signal processing methods."""
+
+    @pytest.fixture
+    def loader(self):
+        """Create LoadData instance."""
+        return LoadData()
+
+    @pytest.mark.unit
+    def test_detect_spikes_basic(self, loader):
+        """Test basic spike detection."""
+        # Create data with a clear spike in the middle
+        data = np.zeros((100, 3))  # 100 samples, 3 channels
+        data[40:60, :] = 5.0  # Add spike with magnitude > threshold
+
+        start_time, end_time = loader.detect_spikes(data, threshold=2.5)
+
+        # Spike should be detected
+        assert start_time >= 40
+        assert end_time <= 60
+        assert start_time <= end_time
+
+    @pytest.mark.unit
+    def test_detect_spikes_with_noise(self, loader):
+        """Test spike detection with noisy data."""
+        # Create data with noise and a clear spike
+        np.random.seed(42)
+        data = np.random.randn(100, 3) * 0.5  # Low noise
+        data[50:55, :] = 10.0  # Add strong spike
+
+        start_time, end_time = loader.detect_spikes(data, threshold=3.0)
+
+        # Spike should be detected around the spike region
+        assert 45 <= start_time <= 55
+        assert 50 <= end_time <= 60
+
+    @pytest.mark.unit
+    def test_detect_spikes_custom_threshold(self, loader):
+        """Test spike detection with custom threshold."""
+        data = np.zeros((100, 3))
+        data[30:40, :] = 2.0  # Moderate spike
+
+        # Lower threshold should detect it
+        start_time, end_time = loader.detect_spikes(data, threshold=1.0)
+        assert start_time >= 30
+        assert end_time <= 40
+
+    @pytest.mark.unit
+    def test_slice_signals_basic(self, loader):
+        """Test basic signal slicing."""
+        # Create sample dataset
+        dataset = {
+            'signal1': np.arange(100),
+            'signal2': np.arange(100) * 2,
+            'signal3': np.arange(100) * 3
+        }
+
+        # Slice from 20 to 80
+        sliced = loader.slice_signals(dataset, 20, 80)
+
+        # Check structure
+        assert 'signal1' in sliced
+        assert 'signal2' in sliced
+        assert 'signal3' in sliced
+
+        # Check lengths
+        assert len(sliced['signal1']) == 60
+        assert len(sliced['signal2']) == 60
+        assert len(sliced['signal3']) == 60
+
+        # Check values
+        assert sliced['signal1'][0] == 20
+        assert sliced['signal1'][-1] == 79
+        assert sliced['signal2'][0] == 40
+        assert sliced['signal3'][0] == 60
+
+    @pytest.mark.unit
+    def test_slice_signals_preserves_all_keys(self, loader):
+        """Test that slice_signals preserves all dataset keys."""
+        dataset = {
+            'acc_x': np.arange(200),
+            'acc_y': np.arange(200) + 100,
+            'acc_z': np.arange(200) + 200,
+            'gyro_x': np.arange(200) * 0.1,
+            'gyro_y': np.arange(200) * 0.2,
+        }
+
+        sliced = loader.slice_signals(dataset, 50, 150)
+
+        # All keys should be preserved
+        assert set(sliced.keys()) == set(dataset.keys())
+
+        # All sliced arrays should have same length
+        lengths = [len(v) for v in sliced.values()]
+        assert all(l == 100 for l in lengths)
+
+    @pytest.mark.integration
+    def test_detect_spikes_and_slice_pipeline(self, loader):
+        """Test combined spike detection and signal slicing workflow."""
+        # Create realistic accelerometer-like data
+        np.random.seed(42)
+        n_samples = 1000
+
+        # Create dataset with multiple signals
+        dataset = {
+            'acc_x': np.random.randn(n_samples) * 0.5,
+            'acc_y': np.random.randn(n_samples) * 0.5,
+            'acc_z': 9.8 + np.random.randn(n_samples) * 0.5
+        }
+
+        # Add synchronized spike across all channels
+        spike_start = 400
+        spike_end = 450
+        for key in dataset:
+            dataset[key][spike_start:spike_end] += 5.0
+
+        # Detect spikes using magnitude
+        data_array = np.column_stack([dataset['acc_x'], dataset['acc_y'], dataset['acc_z']])
+        start_time, end_time = loader.detect_spikes(data_array, threshold=3.0)
+
+        # Slice signals based on detected spikes (with some padding)
+        padding = 50
+        sliced = loader.slice_signals(
+            dataset,
+            max(0, start_time - padding),
+            min(n_samples, end_time + padding)
+        )
+
+        # Verify sliced region contains the spike
+        assert all(len(v) > 0 for v in sliced.values())
+        # Verify all channels have same length
+        lengths = [len(v) for v in sliced.values()]
+        assert len(set(lengths)) == 1  # All same length
