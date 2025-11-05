@@ -784,3 +784,186 @@ class TestLoadEventLogsAndMarkers:
         # Should return empty dictionaries
         assert event_logs == {}
         assert event_markers == {}
+
+
+class TestVisualInspection:
+    """Test suite for visual_inspection method."""
+
+    @pytest.fixture
+    def prepro_instance(self, temp_dir):
+        """Create a PreProData instance."""
+        return PreProData(temp_dir)
+
+    @pytest.mark.unit
+    def test_visual_inspection_with_sync_markers(self, prepro_instance):
+        """Test visual inspection with SYNC markers."""
+        # Create accelerometer data
+        timestamps = pd.date_range('2024-01-01 10:00:00', periods=100, freq='1s')
+        acc_data = pd.DataFrame({
+            'x': np.random.randn(100) * 10,
+            'y': np.random.randn(100) * 10 + 5,
+            'z': np.random.randn(100) * 10 + 9.8
+        }, index=timestamps)
+
+        # Create event markers with SYNC events
+        event_markers = [
+            ('SYNC_1', datetime(2024, 1, 1, 10, 0, 10), 'sync', timedelta(seconds=5)),
+            ('SYNC_2', datetime(2024, 1, 1, 10, 0, 50), 'sync', timedelta(seconds=5)),
+            ('Task_1', datetime(2024, 1, 1, 10, 0, 30), 'task', timedelta(seconds=10))
+        ]
+
+        # Call visual_inspection
+        figs, titles = prepro_instance.visual_inspection('test_stream', acc_data, event_markers)
+
+        # Verify output
+        assert isinstance(figs, list)
+        assert isinstance(titles, list)
+        assert len(figs) == 1
+        assert len(titles) == 1
+        assert 'test_stream' in titles[0]
+        assert 'SYNC Events' in titles[0]
+
+        # Clean up figures
+        for fig in figs:
+            plt.close(fig)
+
+    @pytest.mark.unit
+    def test_visual_inspection_no_sync_markers(self, prepro_instance):
+        """Test visual inspection with no SYNC markers."""
+        timestamps = pd.date_range('2024-01-01 10:00:00', periods=100, freq='1s')
+        acc_data = pd.DataFrame({
+            'x': np.random.randn(100) * 10,
+            'y': np.random.randn(100) * 10,
+            'z': np.random.randn(100) * 10
+        }, index=timestamps)
+
+        # No SYNC markers
+        event_markers = [
+            ('Task_1', datetime(2024, 1, 1, 10, 0, 30), 'task', timedelta(seconds=10))
+        ]
+
+        # Call visual_inspection
+        result = prepro_instance.visual_inspection('test_stream', acc_data, event_markers)
+
+        # Should return None or empty when no SYNC markers
+        assert result is None or result == ([], [])
+
+    @pytest.mark.unit
+    def test_visual_inspection_single_sync_marker(self, prepro_instance):
+        """Test visual inspection with only one SYNC marker."""
+        timestamps = pd.date_range('2024-01-01 10:00:00', periods=100, freq='1s')
+        acc_data = pd.DataFrame({
+            'x': np.random.randn(100) * 10,
+            'y': np.random.randn(100) * 10,
+            'z': np.random.randn(100) * 10
+        }, index=timestamps)
+
+        # Only one SYNC marker (need at least 2)
+        event_markers = [
+            ('SYNC_1', datetime(2024, 1, 1, 10, 0, 10), 'sync', timedelta(seconds=5))
+        ]
+
+        result = prepro_instance.visual_inspection('test_stream', acc_data, event_markers)
+
+        # Should return None or empty when less than 2 SYNC markers
+        assert result is None or result == ([], [])
+
+    @pytest.mark.unit
+    def test_visual_inspection_with_string_index(self, prepro_instance):
+        """Test visual inspection with string timestamps that need conversion."""
+        # Create DataFrame with string index
+        timestamps = pd.date_range('2024-01-01 10:00:00', periods=100, freq='1s')
+        str_timestamps = [str(ts) for ts in timestamps]
+        acc_data = pd.DataFrame({
+            'x': np.random.randn(100) * 10,
+            'y': np.random.randn(100) * 10,
+            'z': np.random.randn(100) * 10
+        }, index=str_timestamps)
+
+        event_markers = [
+            ('SYNC_1', datetime(2024, 1, 1, 10, 0, 10), 'sync', timedelta(seconds=5)),
+            ('SYNC_2', datetime(2024, 1, 1, 10, 0, 50), 'sync', timedelta(seconds=5))
+        ]
+
+        figs, titles = prepro_instance.visual_inspection('test_stream', acc_data, event_markers)
+
+        # Should handle string index conversion
+        assert isinstance(figs, list)
+        assert len(figs) == 1
+
+        # Clean up
+        for fig in figs:
+            plt.close(fig)
+
+
+class TestPlotAccDataWithMarkers:
+    """Test suite for plot_acc_data_with_markers method."""
+
+    @pytest.fixture
+    def prepro_instance(self, temp_dir):
+        """Create a PreProData instance."""
+        return PreProData(temp_dir)
+
+    @pytest.mark.unit
+    def test_plot_acc_data_with_markers_basic(self, prepro_instance):
+        """Test plotting accelerometer data with markers."""
+        # Create accelerometer data
+        timestamps = pd.date_range('2024-01-01 10:00:00', periods=100, freq='100ms')
+        acc_data = pd.DataFrame({
+            'x': np.random.randn(100) * 10,
+            'y': np.random.randn(100) * 10,
+            'z': np.random.randn(100) * 10 + 9.8
+        }, index=timestamps)
+
+        # Create sync markers
+        sync_markers = [
+            ('SYNC_1', datetime(2024, 1, 1, 10, 0, 2), 'sync', timedelta(seconds=1)),
+            ('SYNC_2', datetime(2024, 1, 1, 10, 0, 5), 'sync', timedelta(seconds=1))
+        ]
+
+        # Create detected spikes
+        detected_spikes = [datetime(2024, 1, 1, 10, 0, 3)]
+
+        # Plot data
+        figs, titles = prepro_instance.plot_acc_data_with_markers(
+            'test_stream', acc_data, sync_markers, detected_spikes
+        )
+
+        # Verify output
+        assert isinstance(figs, list)
+        assert isinstance(titles, list)
+        assert len(figs) > 0
+        assert len(titles) > 0
+
+        # Clean up figures
+        for fig in figs:
+            plt.close(fig)
+
+    @pytest.mark.unit
+    def test_plot_acc_data_with_markers_empty_spikes(self, prepro_instance):
+        """Test plotting with no detected spikes."""
+        timestamps = pd.date_range('2024-01-01 10:00:00', periods=100, freq='100ms')
+        acc_data = pd.DataFrame({
+            'x': np.random.randn(100) * 10,
+            'y': np.random.randn(100) * 10,
+            'z': np.random.randn(100) * 10 + 9.8
+        }, index=timestamps)
+
+        sync_markers = [
+            ('SYNC_1', datetime(2024, 1, 1, 10, 0, 2), 'sync', timedelta(seconds=1))
+        ]
+
+        # No detected spikes
+        detected_spikes = []
+
+        figs, titles = prepro_instance.plot_acc_data_with_markers(
+            'test_stream', acc_data, sync_markers, detected_spikes
+        )
+
+        # Should still produce plots
+        assert isinstance(figs, list)
+        assert isinstance(titles, list)
+
+        # Clean up
+        for fig in figs:
+            plt.close(fig)
