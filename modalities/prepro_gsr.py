@@ -1,11 +1,64 @@
+"""
+Galvanic Skin Response (GSR) Preprocessing Module
+
+This module provides preprocessing capabilities for GSR/EDA signals including
+low-pass filtering, normalization, downsampling, and segmentation.
+
+Galvanic Skin Response (GSR) / Electrodermal Activity (EDA) measures skin conductance changes, used for:
+- Stress and arousal level monitoring
+- Emotional response detection
+- Anxiety assessment
+- Cognitive load measurement
+- Sympathetic nervous system activity tracking
+- Lie detection and psychophysiological research
+
+Classes:
+    PreProGSR: Main preprocessing class for GSR/EDA signals
+
+Author: ProSense Contributors
+Date: 2024
+"""
+
 import numpy as np
 import pandas as pd
 from scipy.signal import butter, filtfilt
 from matplotlib import pyplot as plt
 
+
 class PreProGSR:
+    """
+    Preprocessing class for Galvanic Skin Response (GSR) data.
+
+    This class provides a complete preprocessing pipeline for GSR signals including:
+    - Low-pass filtering (removes high-frequency noise, cutoff ~1 Hz)
+    - Normalization (min-max scaling to 0-1 range)
+    - Downsampling
+    - Segmentation into epochs
+
+    Attributes:
+        dataset (dict): Dictionary containing GSR datasets with stream IDs as keys
+        min_sfreq (float): Minimum sampling frequency across all datasets
+        sfreq (float): Current stream sampling frequency
+        data (pd.DataFrame): Current stream data being processed
+
+    Example:
+        >>> gsr_data = {'stream_1': {'data': gsr_df, 'sfreq': 4}}
+        >>> prepro = PreProGSR(gsr_data)
+        >>> processed = prepro.preprocess_gsr_data(epoch_length=30)
+    """
 
     def __init__(self, dataset):
+        """
+        Initialize the GSR preprocessing object.
+
+        Args:
+            dataset (dict): Dictionary of GSR datasets where each entry contains:
+                - 'data': pandas DataFrame with GSR signal data (skin conductance in µS)
+                - 'sfreq': Sampling frequency in Hz
+
+        Note:
+            GSR typically sampled at low rates (4-32 Hz) as it's a slow-changing signal
+        """
         self.dataset = dataset
         self.sfreq = None
         self.data = None
@@ -56,6 +109,22 @@ class PreProGSR:
             return downsampled_data
 
     def lowpass_filter(self, data, cutoff, order=5):
+        """
+        Apply low-pass filter to GSR data to remove high-frequency noise.
+
+        Args:
+            data (pd.DataFrame or pd.Series): GSR signal data
+            cutoff (float): Cutoff frequency in Hz (typically ~1 Hz for GSR)
+            order (int): Filter order (default: 5)
+
+        Returns:
+            array-like: Filtered GSR signal
+
+        Note:
+            - GSR is a slow-changing signal (< 1 Hz typically)
+            - Cutoff of 1 Hz removes muscle artifacts and high-frequency noise
+            - Returns original data if filtering fails
+        """
         # Ensure data is a 1D array or Series
         if isinstance(data, pd.DataFrame):
             data = data.iloc[:, 0]
@@ -79,6 +148,19 @@ class PreProGSR:
         return filtered_data
 
     def normalize(self, data):
+        """
+        Normalize GSR data using min-max scaling to [0, 1] range.
+
+        Args:
+            data (array-like): GSR data to normalize
+
+        Returns:
+            array-like: Normalized data scaled to [0, 1]
+
+        Note:
+            Formula: (x - min) / (max - min)
+            Useful for comparing GSR responses across different participants
+        """
         return (data - np.min(data)) / (np.max(data) - np.min(data))
 
     def preprocess(self):
@@ -114,6 +196,34 @@ class PreProGSR:
         return segments
 
     def preprocess_gsr_data(self, epoch_length=5):
+        """
+        Complete GSR preprocessing pipeline.
+
+        Applies the full preprocessing workflow:
+        1. Downsampling to minimum sampling rate
+        2. Low-pass filtering (cutoff 1 Hz)
+        3. Normalization (min-max scaling to [0, 1])
+        4. Segmentation into epochs
+
+        Args:
+            epoch_length (float): Length of each epoch in seconds (default: 5)
+
+        Returns:
+            dict: Processed data for each stream containing:
+                - 'data': Filtered, normalized GSR data
+                - 'epochs': List of segmented DataFrames
+                - 'sfreq': Final sampling frequency
+
+        Example:
+            >>> prepro = PreProGSR(gsr_dataset)
+            >>> processed = prepro.preprocess_gsr_data(epoch_length=30)
+            >>> for stream_id, stream_data in processed.items():
+            ...     print(f"{stream_id}: {len(stream_data['epochs'])} epochs")
+
+        Note:
+            Longer epochs (30-60s) recommended for GSR as it's a slow-changing signal
+            Useful for stress and arousal analysis
+        """
         processed_data = {}
         for stream_id, data_info in self.dataset.items():
             self.data = data_info['data']
