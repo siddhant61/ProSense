@@ -846,3 +846,169 @@ class TestLoadDataFormatDataset:
         # Should raise error about non-monotonic timestamps
         with pytest.raises(ValueError, match="Timestamps are not monotonically increasing"):
             loader.format_dataset(str(pkl_file))
+
+
+class TestLoadDataFifOperations:
+    """Test suite for FIF file save/load operations."""
+
+    @pytest.fixture
+    def loader(self):
+        """Create a LoadData instance."""
+        return LoadData()
+
+    @pytest.fixture
+    def sample_dataset(self):
+        """Create a sample dataset with MNE data."""
+        n_channels = 4
+        n_samples = 1000
+        sfreq = 256.0
+
+        # Create MNE Raw data
+        data = np.random.randn(n_channels, n_samples)
+        info = mne.create_info(
+            ch_names=["AF7", "AF8", "TP9", "TP10"],
+            sfreq=sfreq,
+            ch_types='eeg'
+        )
+        raw = mne.io.RawArray(data, info)
+
+        # Create dataset dictionary
+        # Note: Key needs exactly one underscore (load_fif_dataset extracts up to 2nd underscore)
+        dataset = {
+            'test_stream1': {
+                'data': raw,
+                'sfreq': sfreq
+            }
+        }
+        return dataset
+
+    @pytest.fixture
+    def sample_dataset_with_epochs(self):
+        """Create a sample dataset with both Raw and Epochs."""
+        n_channels = 4
+        n_samples = 1000
+        sfreq = 256.0
+
+        # Create MNE Raw data
+        data = np.random.randn(n_channels, n_samples)
+        info = mne.create_info(
+            ch_names=["AF7", "AF8", "TP9", "TP10"],
+            sfreq=sfreq,
+            ch_types='eeg'
+        )
+        raw = mne.io.RawArray(data, info)
+
+        # Create events for epochs
+        events = np.array([[100, 0, 1], [300, 0, 1], [500, 0, 1]])
+        epochs = mne.Epochs(raw, events, tmin=0, tmax=0.5, baseline=None, preload=True)
+
+        # Create dataset dictionary
+        # Note: Key needs exactly one underscore (load_fif_dataset extracts up to 2nd underscore)
+        dataset = {
+            'test_stream2': {
+                'data': raw,
+                'epochs': epochs,
+                'sfreq': sfreq
+            }
+        }
+        return dataset
+
+    @pytest.mark.integration
+    def test_save_fif_dataset_basic(self, loader, sample_dataset, tmp_path):
+        """Test saving dataset to FIF format."""
+        save_dir = tmp_path / "fif_output"
+        save_dir.mkdir()
+
+        # Save the dataset
+        loader.save_fif_dataset(sample_dataset, str(save_dir))
+
+        # Check that files were created
+        assert (save_dir / "test_stream1_raw.fif").exists()
+        assert (save_dir / "test_stream1_sfreq.txt").exists()
+
+        # Verify sfreq was saved correctly
+        with open(save_dir / "test_stream1_sfreq.txt", 'r') as f:
+            saved_sfreq = float(f.read())
+            assert saved_sfreq == 256.0
+
+    @pytest.mark.integration
+    def test_save_fif_dataset_with_epochs(self, loader, sample_dataset_with_epochs, tmp_path):
+        """Test saving dataset with epochs to FIF format."""
+        save_dir = tmp_path / "fif_output_epochs"
+        save_dir.mkdir()
+
+        # Save the dataset
+        loader.save_fif_dataset(sample_dataset_with_epochs, str(save_dir))
+
+        # Check that all files were created
+        assert (save_dir / "test_stream2_raw.fif").exists()
+        assert (save_dir / "test_stream2_epo.fif").exists()
+        assert (save_dir / "test_stream2_sfreq.txt").exists()
+
+    @pytest.mark.integration
+    def test_load_fif_dataset_basic(self, loader, sample_dataset, tmp_path):
+        """Test loading dataset from FIF format."""
+        save_dir = tmp_path / "fif_for_load"
+        save_dir.mkdir()
+
+        # Save first
+        loader.save_fif_dataset(sample_dataset, str(save_dir))
+
+        # Load back
+        loaded_dataset = loader.load_fif_dataset(str(save_dir))
+
+        # Check structure
+        assert isinstance(loaded_dataset, dict)
+        assert 'test_stream1' in loaded_dataset
+        assert 'data' in loaded_dataset['test_stream1']
+        assert 'sfreq' in loaded_dataset['test_stream1']
+
+        # Verify data type
+        assert isinstance(loaded_dataset['test_stream1']['data'], mne.io.Raw)
+        assert loaded_dataset['test_stream1']['sfreq'] == 256.0
+
+    @pytest.mark.integration
+    def test_load_fif_dataset_with_epochs(self, loader, sample_dataset_with_epochs, tmp_path):
+        """Test loading dataset with epochs from FIF format."""
+        save_dir = tmp_path / "fif_for_load_epochs"
+        save_dir.mkdir()
+
+        # Save first
+        loader.save_fif_dataset(sample_dataset_with_epochs, str(save_dir))
+
+        # Load back
+        loaded_dataset = loader.load_fif_dataset(str(save_dir))
+
+        # Check structure
+        assert isinstance(loaded_dataset, dict)
+        assert 'test_stream2' in loaded_dataset
+        assert 'data' in loaded_dataset['test_stream2']
+        assert 'epochs' in loaded_dataset['test_stream2']
+        assert 'sfreq' in loaded_dataset['test_stream2']
+
+        # Verify data types
+        assert isinstance(loaded_dataset['test_stream2']['data'], mne.io.Raw)
+        # Epochs loaded from FIF are EpochsFIF, check for BaseEpochs instead
+        assert isinstance(loaded_dataset['test_stream2']['epochs'], mne.BaseEpochs)
+        assert loaded_dataset['test_stream2']['sfreq'] == 256.0
+
+    @pytest.mark.integration
+    def test_save_and_load_cycle_preserves_data(self, loader, sample_dataset, tmp_path):
+        """Test that save and load cycle preserves data accurately."""
+        save_dir = tmp_path / "fif_cycle_test"
+        save_dir.mkdir()
+
+        # Get original data
+        original_data = sample_dataset['test_stream1']['data'].get_data()
+
+        # Save
+        loader.save_fif_dataset(sample_dataset, str(save_dir))
+
+        # Load
+        loaded_dataset = loader.load_fif_dataset(str(save_dir))
+
+        # Get loaded data
+        loaded_data = loaded_dataset['test_stream1']['data'].get_data()
+
+        # Verify data is preserved
+        np.testing.assert_array_almost_equal(original_data, loaded_data, decimal=6)
