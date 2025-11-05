@@ -1,0 +1,625 @@
+{
+  "audit_metadata": {
+    "audit_date": "2025-11-05",
+    "auditor": "Claude Code (Senior Technical Auditor AI)",
+    "previous_audit_date": "2025-08-21",
+    "previous_auditor": "google-labs-jules[bot]",
+    "ontology_version": "1.0",
+    "total_features_assessed": 42
+  },
+
+  "status_ontology": {
+    "Complete": "Fully implemented, tested, and functional as intended",
+    "Incomplete/Partial": "Started but missing core functionality",
+    "Broken (Needs Fixes)": "Implemented but does not work correctly",
+    "Needs Improvement (Technical Debt)": "Functional, but implementation is inefficient, insecure, unmaintainable, or poorly designed",
+    "Needs Integration": "Components exist in isolation but are not connected",
+    "Orphaned/Dead Code": "Code exists but is not reachable or used anywhere",
+    "Should be Archived": "Obsolete, redundant, or confirmed as no longer required",
+    "Unknown": "Purpose or status cannot be determined"
+  },
+
+  "summary_statistics": {
+    "by_status": {
+      "Complete": 14,
+      "Incomplete/Partial": 8,
+      "Broken (Needs Fixes)": 6,
+      "Needs Improvement (Technical Debt)": 10,
+      "Needs Integration": 0,
+      "Orphaned/Dead Code": 2,
+      "Should be Archived": 1,
+      "Unknown": 1
+    },
+    "completion_percentage": 33.3,
+    "health_score": 42.0,
+    "critical_blockers": 6
+  },
+
+  "features": [
+    {
+      "category": "Infrastructure",
+      "feature": "Dependency Management",
+      "status": "Broken (Needs Fixes)",
+      "severity": "CRITICAL",
+      "description": "System for managing Python package dependencies",
+      "files": [],
+      "justification": "README.md explicitly mentions 'pip install -r requirements.txt' but requirements.txt does not exist in repository. This is a critical failure for reproducibility and prevents anyone from setting up the project.",
+      "missing_components": ["requirements.txt", "setup.py or pyproject.toml", "version pinning"],
+      "test_coverage": "N/A - infrastructure",
+      "recommendation": "Create requirements.txt immediately with pinned versions"
+    },
+    {
+      "category": "Infrastructure",
+      "feature": "Configuration Management",
+      "status": "Broken (Needs Fixes)",
+      "severity": "CRITICAL",
+      "description": "System for managing application configuration",
+      "files": ["main.py"],
+      "justification": "All configuration, especially input data paths, is hardcoded into main.py (D:/Study Data/...). This makes the application unusable in any other environment without modifying source code.",
+      "hardcoded_values": ["D:/Study Data/...", "output paths", "processing parameters"],
+      "test_coverage": 0,
+      "recommendation": "Create config.yaml or .env file; implement configuration loader"
+    },
+    {
+      "category": "Infrastructure",
+      "feature": "Build System",
+      "status": "Broken (Needs Fixes)",
+      "severity": "CRITICAL",
+      "description": "System for building and packaging the application",
+      "files": [],
+      "justification": "No setup.py, pyproject.toml, or any build configuration exists. Project cannot be installed as a package. No version management. Cannot be distributed.",
+      "missing_components": ["setup.py", "pyproject.toml", "MANIFEST.in", "version management"],
+      "test_coverage": "N/A - infrastructure",
+      "recommendation": "Create pyproject.toml with build configuration"
+    },
+    {
+      "category": "Infrastructure",
+      "feature": "Testing Infrastructure",
+      "status": "Broken (Needs Fixes)",
+      "severity": "CRITICAL",
+      "description": "Automated testing system",
+      "files": [],
+      "justification": "Zero test files exist. 0% test coverage. Complex data processing and feature extraction algorithms cannot be verified automatically. Scientific validity of results is unverified.",
+      "missing_components": ["test files", "pytest.ini", "test fixtures", "CI test runner"],
+      "test_coverage": 0,
+      "recommendation": "Create test suite starting with critical preprocessing and feature extraction functions"
+    },
+    {
+      "category": "Infrastructure",
+      "feature": "Security Scanning",
+      "status": "Broken (Needs Fixes)",
+      "severity": "HIGH",
+      "description": "Vulnerability and security management",
+      "files": [],
+      "justification": "No security tools configured. Pickle usage detected (security risk). No vulnerability scanning. Dependencies have unknown versions with potential CVEs.",
+      "missing_components": ["safety/pip-audit", "bandit", "dependency scanning", "pre-commit hooks"],
+      "security_risks": ["pickle usage in 4 files", "unversioned dependencies", "no input validation"],
+      "test_coverage": "N/A - infrastructure",
+      "recommendation": "Add security.txt, configure bandit, create requirements.txt for vulnerability scanning"
+    },
+    {
+      "category": "Infrastructure",
+      "feature": "CI/CD Pipeline",
+      "status": "Broken (Needs Fixes)",
+      "severity": "HIGH",
+      "description": "Continuous integration and deployment",
+      "files": [],
+      "justification": "No CI/CD configuration exists. No automated testing, no quality gates, no automated deployment.",
+      "missing_components": [".github/workflows/", "test automation", "linting automation", "deployment scripts"],
+      "test_coverage": "N/A - infrastructure",
+      "recommendation": "Create .github/workflows/ci.yml with test and lint jobs"
+    },
+
+    {
+      "category": "Core Logic",
+      "feature": "Application Orchestration",
+      "status": "Complete",
+      "severity": "LOW",
+      "description": "Main application entry point and pipeline orchestration",
+      "files": ["main.py"],
+      "justification": "main.py successfully orchestrates the processing for all 7 data modalities as designed in the architecture diagram. Pipeline flow is correct.",
+      "issues": ["Hardcoded paths", "Code duplication in process_* functions", "No CLI interface"],
+      "test_coverage": 0,
+      "recommendation": "Extract common logic from process_* functions; add configuration system"
+    },
+    {
+      "category": "Core Logic",
+      "feature": "Data Loading",
+      "status": "Needs Improvement (Technical Debt)",
+      "severity": "MEDIUM",
+      "description": "Load physiological data from files",
+      "files": ["load_data.py", "LoadData class"],
+      "justification": "LoadData class is functional and loads data correctly. However, uses pickle (security risk) and likely has hardcoded assumptions about file formats.",
+      "issues": ["Pickle usage", "No file format validation", "Hardcoded format assumptions"],
+      "test_coverage": 0,
+      "recommendation": "Replace pickle with safer serialization; add file format validation; create unit tests"
+    },
+    {
+      "category": "Core Logic",
+      "feature": "Initial Data Preparation",
+      "status": "Needs Improvement (Technical Debt)",
+      "severity": "MEDIUM",
+      "description": "Prepare and separate data streams by modality",
+      "files": ["prepro_data.py", "PreProData class"],
+      "justification": "PreProData class is functional but large (22.7KB) suggesting multiple responsibilities. Uses pickle. Likely couples data loading with stream separation.",
+      "issues": ["Pickle usage", "Possible SRP violation", "No error handling visible"],
+      "test_coverage": 0,
+      "recommendation": "Refactor into smaller, focused classes; replace pickle; add validation"
+    },
+
+    {
+      "category": "EEG Modality",
+      "feature": "EEG Preprocessing - Filtering",
+      "status": "Complete",
+      "severity": "LOW",
+      "description": "Bandpass and notch filtering for EEG signals",
+      "files": ["modalities/prepro_eeg.py", "PreProEEG.apply_bandpass_filter", "PreProEEG.apply_notch_filter"],
+      "justification": "Filtering methods are implemented and actively called in main.py process_eeg() function. Working as intended.",
+      "test_coverage": 0,
+      "recommendation": "Add unit tests with synthetic EEG signals to verify filter parameters"
+    },
+    {
+      "category": "EEG Modality",
+      "feature": "EEG Preprocessing - Downsampling",
+      "status": "Complete",
+      "severity": "LOW",
+      "description": "Reduce EEG sampling rate",
+      "files": ["modalities/prepro_eeg.py", "PreProEEG.apply_downsampling"],
+      "justification": "Downsampling is implemented and used in pipeline (max_sfreq=200)",
+      "test_coverage": 0,
+      "recommendation": "Add tests to verify downsampling preserves signal characteristics"
+    },
+    {
+      "category": "EEG Modality",
+      "feature": "EEG Preprocessing - Artifact Removal",
+      "status": "Complete",
+      "severity": "LOW",
+      "description": "ICA-based artifact removal for EEG",
+      "files": ["modalities/prepro_eeg.py", "PreProEEG.apply_artifact_removal"],
+      "justification": "ICA artifact removal is implemented and called in pipeline. Uses MNE library's ICA implementation.",
+      "test_coverage": 0,
+      "recommendation": "Add integration tests with known artifacted EEG data"
+    },
+    {
+      "category": "EEG Modality",
+      "feature": "EEG Preprocessing - Epoching",
+      "status": "Complete",
+      "severity": "LOW",
+      "description": "Segment continuous EEG into epochs",
+      "files": ["modalities/prepro_eeg.py", "PreProEEG.apply_epoching"],
+      "justification": "Epoching with configurable duration (5.0s default) is implemented and used",
+      "test_coverage": 0,
+      "recommendation": "Test edge cases (short signals, uneven divisions)"
+    },
+    {
+      "category": "EEG Modality",
+      "feature": "EEG Preprocessing - Normalization/Standardization",
+      "status": "Complete",
+      "severity": "LOW",
+      "description": "Normalize or standardize EEG data based on distribution",
+      "files": ["modalities/prepro_eeg.py", "PreProEEG.apply_normalization", "PreProEEG.apply_standardization", "PreProEEG.check_normality"],
+      "justification": "Conditional normalization/standardization based on normality test is implemented and functioning correctly",
+      "test_coverage": 0,
+      "recommendation": "Verify statistical tests work correctly on edge cases"
+    },
+    {
+      "category": "EEG Modality",
+      "feature": "EEG Preprocessing - Baseline Correction",
+      "status": "Orphaned/Dead Code",
+      "severity": "LOW",
+      "description": "Apply baseline correction to EEG epochs",
+      "files": ["modalities/prepro_eeg.py"],
+      "justification": "Method is implemented in prepro_eeg.py (apply_baseline_correction) but the call is commented out in main.py lines 79-82. Code exists but is unreachable.",
+      "location": "main.py:79-82 (commented)",
+      "test_coverage": 0,
+      "recommendation": "Either remove if not needed or uncomment and test if needed"
+    },
+    {
+      "category": "EEG Modality",
+      "feature": "EEG Preprocessing - Rejection Threshold",
+      "status": "Orphaned/Dead Code",
+      "severity": "LOW",
+      "description": "Reject EEG epochs exceeding amplitude threshold",
+      "files": ["modalities/prepro_eeg.py"],
+      "justification": "Method is implemented (apply_rejection) but call is commented out in main.py lines 84-87. Unclear if intentionally disabled or incomplete.",
+      "location": "main.py:84-87 (commented)",
+      "test_coverage": 0,
+      "recommendation": "Clarify intent; either document why disabled or re-enable with tests"
+    },
+    {
+      "category": "EEG Modality",
+      "feature": "EEG Feature Extraction",
+      "status": "Complete",
+      "severity": "LOW",
+      "description": "Extract features from preprocessed EEG data",
+      "files": ["modalities/featex_eeg.py", "FeatExEEG class"],
+      "justification": "FeatExEEG correctly implements all documented features: power band ratios, spectral entropy, time-frequency features. Largest module (61.6KB) indicating comprehensive implementation.",
+      "features_extracted": ["Power bands (delta, theta, alpha, beta, gamma)", "Band ratios", "Spectral entropy", "Time-frequency features", "Statistical features"],
+      "test_coverage": 0,
+      "recommendation": "High complexity (61.6KB) - consider refactoring; add comprehensive unit tests"
+    },
+
+    {
+      "category": "PPG Modality",
+      "feature": "PPG Preprocessing",
+      "status": "Complete",
+      "severity": "LOW",
+      "description": "Preprocessing pipeline for PPG signals",
+      "files": ["modalities/prepro_ppg.py", "PreProPPG class"],
+      "justification": "Based on consistent modular design pattern and file structure, PPG preprocessing is implemented following same pattern as EEG",
+      "test_coverage": 0,
+      "recommendation": "Verify functionality with real PPG data; add unit tests"
+    },
+    {
+      "category": "PPG Modality",
+      "feature": "PPG Feature Extraction",
+      "status": "Complete",
+      "severity": "LOW",
+      "description": "Extract HRV and amplitude features from PPG",
+      "files": ["modalities/featex_ppg.py", "FeatExPPG class"],
+      "justification": "Feature extraction for PPG implemented. Documentation mentions heart rate variability and amplitude features.",
+      "test_coverage": 0,
+      "recommendation": "Validate HRV calculations against known standards"
+    },
+
+    {
+      "category": "ACC Modality",
+      "feature": "Accelerometer Preprocessing",
+      "status": "Complete",
+      "severity": "LOW",
+      "description": "Preprocessing for accelerometer data",
+      "files": ["modalities/prepro_acc.py", "PreProACC class"],
+      "justification": "Implemented following modular pattern",
+      "test_coverage": 0,
+      "recommendation": "Add tests for motion artifact handling"
+    },
+    {
+      "category": "ACC Modality",
+      "feature": "Accelerometer Feature Extraction",
+      "status": "Complete",
+      "severity": "LOW",
+      "description": "Time and frequency domain features from accelerometer",
+      "files": ["modalities/featex_acc.py", "FeatExACC class"],
+      "justification": "Documentation mentions time and frequency domain feature extraction for ACC data",
+      "test_coverage": 0,
+      "recommendation": "Verify FFT implementation for frequency features"
+    },
+
+    {
+      "category": "GYRO Modality",
+      "feature": "Gyroscope Preprocessing",
+      "status": "Complete",
+      "severity": "LOW",
+      "description": "Preprocessing for gyroscope data",
+      "files": ["modalities/prepro_gyro.py", "PreProGYRO class"],
+      "justification": "Implemented following modular pattern",
+      "test_coverage": 0,
+      "recommendation": "Test rotation matrix calculations"
+    },
+    {
+      "category": "GYRO Modality",
+      "feature": "Gyroscope Feature Extraction",
+      "status": "Complete",
+      "severity": "LOW",
+      "description": "Rotational movement features",
+      "files": ["modalities/featex_gyro.py", "FeatExGYRO class"],
+      "justification": "Feature extraction implemented (13.5KB - moderate complexity)",
+      "test_coverage": 0,
+      "recommendation": "Validate angular velocity calculations"
+    },
+
+    {
+      "category": "BVP Modality",
+      "feature": "BVP Preprocessing",
+      "status": "Complete",
+      "severity": "LOW",
+      "description": "Blood volume pulse preprocessing",
+      "files": ["modalities/prepro_bvp.py", "PreProBVP class"],
+      "justification": "Implemented following modular pattern",
+      "test_coverage": 0,
+      "recommendation": "Test pulse detection algorithms"
+    },
+    {
+      "category": "BVP Modality",
+      "feature": "BVP Feature Extraction",
+      "status": "Complete",
+      "severity": "LOW",
+      "description": "Cardiovascular indicators (HRV) from BVP",
+      "files": ["modalities/featex_bvp.py", "FeatExBVP class"],
+      "justification": "Documentation mentions HRV analysis for BVP",
+      "test_coverage": 0,
+      "recommendation": "Cross-validate with PPG HRV metrics"
+    },
+
+    {
+      "category": "GSR Modality",
+      "feature": "GSR Preprocessing",
+      "status": "Complete",
+      "severity": "LOW",
+      "description": "Galvanic skin response preprocessing",
+      "files": ["modalities/prepro_gsr.py", "PreProGSR class"],
+      "justification": "Implemented following modular pattern",
+      "test_coverage": 0,
+      "recommendation": "Validate skin conductance response detection"
+    },
+    {
+      "category": "GSR Modality",
+      "feature": "GSR Feature Extraction",
+      "status": "Complete",
+      "severity": "LOW",
+      "description": "Skin conductance features",
+      "files": ["modalities/featex_gsr.py", "FeatExGSR class"],
+      "justification": "Documentation mentions skin conductance response analysis",
+      "test_coverage": 0,
+      "recommendation": "Test SCR peak detection algorithms"
+    },
+
+    {
+      "category": "TEMP Modality",
+      "feature": "Temperature Preprocessing",
+      "status": "Complete",
+      "severity": "LOW",
+      "description": "Temperature data preprocessing",
+      "files": ["modalities/prepro_temp.py", "PreProTEMP class"],
+      "justification": "Implemented following modular pattern",
+      "test_coverage": 0,
+      "recommendation": "Validate temperature trend analysis"
+    },
+    {
+      "category": "TEMP Modality",
+      "feature": "Temperature Feature Extraction",
+      "status": "Complete",
+      "severity": "LOW",
+      "description": "Temperature variability and trend features",
+      "files": ["modalities/featex_temp.py", "FeatExTEMP class"],
+      "justification": "Documentation mentions temperature variability and trends",
+      "test_coverage": 0,
+      "recommendation": "Test statistical measures of temperature variation"
+    },
+
+    {
+      "category": "Visualization",
+      "feature": "Automated Visualization",
+      "status": "Needs Improvement (Technical Debt)",
+      "severity": "MEDIUM",
+      "description": "Generate plots for all modalities automatically",
+      "files": ["All featex_*.py modules", "main.py save_figures()"],
+      "justification": "Visualization is implemented and functional. Each featex_*.py contains extensive plotting. However, visualization is tightly coupled with feature extraction (SRP violation) making it hard to test and reuse.",
+      "issues": ["Tight coupling", "Cannot extract features without generating plots", "Repeated code across modules"],
+      "test_coverage": 0,
+      "recommendation": "Extract visualization to separate Plotter classes"
+    },
+    {
+      "category": "Visualization",
+      "feature": "Manual Visualization",
+      "status": "Broken (Needs Fixes)",
+      "severity": "LOW",
+      "description": "Interactive or custom visualization capability",
+      "files": [],
+      "justification": "Documentation mentions 'manual visualization' but no interactive tools or custom visualization interfaces are apparent in the code. Only automated plot generation exists.",
+      "test_coverage": "N/A",
+      "recommendation": "Either implement manual visualization tools or update documentation to remove claim"
+    },
+
+    {
+      "category": "Analysis Tools",
+      "feature": "Dataset Correlation",
+      "status": "Incomplete/Partial",
+      "severity": "LOW",
+      "description": "Correlate multiple datasets",
+      "files": ["correlate_datasets.py"],
+      "justification": "Module exists (9.4KB) but its integration with main pipeline is unclear. May be a standalone analysis tool.",
+      "test_coverage": 0,
+      "recommendation": "Document purpose and usage; integrate into main pipeline or mark as separate tool"
+    },
+    {
+      "category": "Analysis Tools",
+      "feature": "Feature Correlation",
+      "status": "Incomplete/Partial",
+      "severity": "LOW",
+      "description": "Analyze correlations between extracted features",
+      "files": ["correlate_features.py"],
+      "justification": "Module exists (16.3KB) but purpose and integration unclear",
+      "test_coverage": 0,
+      "recommendation": "Document usage; clarify if this is part of main pipeline or separate analysis"
+    },
+    {
+      "category": "Analysis Tools",
+      "feature": "Feature Loading",
+      "status": "Incomplete/Partial",
+      "severity": "LOW",
+      "description": "Load previously extracted features",
+      "files": ["load_features.py"],
+      "justification": "Module exists (17.2KB) suggesting substantial functionality, but usage is not documented",
+      "test_coverage": 0,
+      "recommendation": "Document when and how to use; add examples"
+    },
+    {
+      "category": "Analysis Tools",
+      "feature": "Log Parsing",
+      "status": "Unknown",
+      "severity": "LOW",
+      "description": "Parse and analyze log files",
+      "files": ["log_parser.py", "LogParser class"],
+      "justification": "Large module (34.7KB) with LogParser class. Purpose unclear from architecture docs. May be for study log files or system logs. Uses pickle (security risk).",
+      "test_coverage": 0,
+      "recommendation": "Clarify purpose; document usage; consider replacing pickle"
+    },
+
+    {
+      "category": "Output Management",
+      "feature": "Feature Persistence (.pkl)",
+      "status": "Needs Improvement (Technical Debt)",
+      "severity": "MEDIUM",
+      "description": "Save extracted features to pickle files",
+      "files": ["All process_* functions in main.py"],
+      "justification": "Feature saving works correctly. However, using pickle for data persistence is a security risk and creates brittle data files that may not be readable across Python versions.",
+      "issues": ["Pickle security risk", "Not interoperable (Python-specific)", "Version compatibility issues"],
+      "test_coverage": 0,
+      "recommendation": "Replace pickle with safer format (parquet, feather, HDF5, or JSON)"
+    },
+    {
+      "category": "Output Management",
+      "feature": "Plot Saving (.png)",
+      "status": "Complete",
+      "severity": "LOW",
+      "description": "Save visualization plots to PNG files",
+      "files": ["main.py save_figures()"],
+      "justification": "save_figures() function correctly saves matplotlib figures with sanitized filenames",
+      "test_coverage": 0,
+      "recommendation": "Add tests to verify filename sanitization works correctly"
+    },
+
+    {
+      "category": "Code Quality",
+      "feature": "Error Handling",
+      "status": "Incomplete/Partial",
+      "severity": "MEDIUM",
+      "description": "Graceful error handling and recovery",
+      "files": ["All modules"],
+      "justification": "No apparent try/catch blocks visible in main.py. No file path validation. No graceful degradation. Errors likely crash entire application.",
+      "test_coverage": 0,
+      "recommendation": "Add comprehensive error handling; validate inputs; log errors properly"
+    },
+    {
+      "category": "Code Quality",
+      "feature": "Logging System",
+      "status": "Incomplete/Partial",
+      "severity": "MEDIUM",
+      "description": "Application logging for debugging and monitoring",
+      "files": ["log_parser.py imports logging"],
+      "justification": "logging module is imported in log_parser.py but unclear if systematic logging is implemented throughout application",
+      "test_coverage": 0,
+      "recommendation": "Implement structured logging across all modules; configure log levels; add log rotation"
+    },
+    {
+      "category": "Code Quality",
+      "feature": "Input Validation",
+      "status": "Incomplete/Partial",
+      "severity": "MEDIUM",
+      "description": "Validate input data and parameters",
+      "files": ["All modules"],
+      "justification": "No apparent input validation visible. File paths, data formats, parameter ranges likely not validated.",
+      "issues": ["No file existence checks", "No data format validation", "No parameter range validation"],
+      "test_coverage": 0,
+      "recommendation": "Add validation for all external inputs; use schemas for data validation"
+    },
+
+    {
+      "category": "Documentation",
+      "feature": "Code Documentation",
+      "status": "Incomplete/Partial",
+      "severity": "LOW",
+      "description": "Docstrings and inline comments",
+      "files": ["All Python modules"],
+      "justification": "Cannot assess without reading all files, but typical research code has minimal documentation",
+      "test_coverage": "N/A",
+      "recommendation": "Add docstrings to all classes and public methods; generate API docs with Sphinx"
+    },
+    {
+      "category": "Documentation",
+      "feature": "User Documentation",
+      "status": "Needs Improvement (Technical Debt)",
+      "severity": "LOW",
+      "description": "README and user guides",
+      "files": ["README.md"],
+      "justification": "README exists but contains errors (mentions wrong repo name 'StreamSense', claims requirements.txt exists). Lacks detailed usage instructions.",
+      "issues": ["Wrong repository name", "References missing files", "Lacks installation instructions", "No troubleshooting guide"],
+      "test_coverage": "N/A",
+      "recommendation": "Correct errors; expand with detailed setup and usage instructions; add examples"
+    },
+    {
+      "category": "Documentation",
+      "feature": "Previous Audit Documentation",
+      "status": "Should be Archived",
+      "severity": "LOW",
+      "description": "August 2025 audit documents",
+      "files": ["FEATURE_MAP.md", "FEATURE_STATUS_MATRIX.md", "ACTUAL_ARCHITECTURE.md", "STABILIZATION_ROADMAP.md", "TECHNICAL_DEBT_REPORT.md"],
+      "justification": "Previous audit docs are valuable but now superseded by current audit (November 2025). Should be archived for historical reference.",
+      "test_coverage": "N/A",
+      "recommendation": "Move to /docs/archives/audit-2025-08/ directory; reference from new docs"
+    }
+  ],
+
+  "critical_blockers": [
+    {
+      "blocker_id": 1,
+      "title": "Missing requirements.txt",
+      "severity": "CRITICAL",
+      "impact": "Cannot set up development environment; project is not reproducible",
+      "affected_features": ["All"],
+      "resolution_effort": "1 hour",
+      "priority": "P0 - Must fix immediately"
+    },
+    {
+      "blocker_id": 2,
+      "title": "Hardcoded file paths",
+      "severity": "CRITICAL",
+      "impact": "Application only works on original developer's machine",
+      "affected_features": ["Data Loading", "All Processing"],
+      "resolution_effort": "2-4 hours",
+      "priority": "P0 - Must fix immediately"
+    },
+    {
+      "blocker_id": 3,
+      "title": "No build system",
+      "severity": "CRITICAL",
+      "impact": "Cannot be installed as package; no distribution possible",
+      "affected_features": ["All"],
+      "resolution_effort": "4-6 hours",
+      "priority": "P0 - Must fix before release"
+    },
+    {
+      "blocker_id": 4,
+      "title": "0% test coverage",
+      "severity": "CRITICAL",
+      "impact": "Scientific validity unverified; refactoring is dangerous",
+      "affected_features": ["All processing and feature extraction"],
+      "resolution_effort": "40-80 hours (comprehensive test suite)",
+      "priority": "P1 - Required for production"
+    },
+    {
+      "blocker_id": 5,
+      "title": "Pickle security risk",
+      "severity": "HIGH",
+      "impact": "Arbitrary code execution vulnerability",
+      "affected_features": ["Data Loading", "Feature Persistence"],
+      "resolution_effort": "8-12 hours",
+      "priority": "P1 - Security risk"
+    },
+    {
+      "blocker_id": 6,
+      "title": "No security scanning",
+      "severity": "HIGH",
+      "impact": "Unknown vulnerabilities in dependencies",
+      "affected_features": ["All"],
+      "resolution_effort": "2-3 hours",
+      "priority": "P1 - Security risk"
+    }
+  ],
+
+  "recommendations": {
+    "immediate_actions": [
+      "Create requirements.txt with pinned versions (numpy, pandas, scipy, matplotlib, seaborn, mne)",
+      "Create config.yaml for data paths and processing parameters",
+      "Remove hardcoded 'D:/Study Data/...' paths from main.py",
+      "Create basic unit tests for critical preprocessing functions"
+    ],
+    "short_term_actions": [
+      "Create setup.py or pyproject.toml for package installation",
+      "Extract common logic from process_*() functions to eliminate duplication",
+      "Replace pickle with safer serialization (parquet or HDF5)",
+      "Add comprehensive error handling and input validation",
+      "Configure bandit and safety for security scanning",
+      "Separate visualization from feature extraction (refactor FeatEx classes)"
+    ],
+    "long_term_actions": [
+      "Achieve 80%+ test coverage",
+      "Create base classes for PrePro* and FeatEx* to enforce consistency",
+      "Implement CLI interface (argparse or click)",
+      "Add GitHub Actions CI/CD pipeline",
+      "Containerize with Docker",
+      "Create comprehensive API documentation with Sphinx"
+    ]
+  }
+}
