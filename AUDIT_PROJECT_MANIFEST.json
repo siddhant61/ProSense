@@ -1,0 +1,432 @@
+[
+  {
+    "path": ".idea/.gitignore",
+    "absolute_path": "/home/user/ProSense/.idea/.gitignore",
+    "size_bytes": 47,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": "",
+    "category": "IDE Configuration",
+    "directory": ".idea"
+  },
+  {
+    "path": ".idea/.name",
+    "absolute_path": "/home/user/ProSense/.idea/.name",
+    "size_bytes": 13,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": "",
+    "category": "IDE Configuration",
+    "directory": ".idea"
+  },
+  {
+    "path": ".idea/ProSense.iml",
+    "absolute_path": "/home/user/ProSense/.idea/ProSense.iml",
+    "size_bytes": 352,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".iml",
+    "category": "IDE Configuration",
+    "directory": ".idea"
+  },
+  {
+    "path": ".idea/inspectionProfiles/profiles_settings.xml",
+    "absolute_path": "/home/user/ProSense/.idea/inspectionProfiles/profiles_settings.xml",
+    "size_bytes": 174,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".xml",
+    "category": "IDE Configuration",
+    "directory": ".idea/inspectionProfiles"
+  },
+  {
+    "path": ".idea/misc.xml",
+    "absolute_path": "/home/user/ProSense/.idea/misc.xml",
+    "size_bytes": 196,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".xml",
+    "category": "IDE Configuration",
+    "directory": ".idea"
+  },
+  {
+    "path": ".idea/modules.xml",
+    "absolute_path": "/home/user/ProSense/.idea/modules.xml",
+    "size_bytes": 268,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".xml",
+    "category": "IDE Configuration",
+    "directory": ".idea"
+  },
+  {
+    "path": ".idea/vcs.xml",
+    "absolute_path": "/home/user/ProSense/.idea/vcs.xml",
+    "size_bytes": 180,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".xml",
+    "category": "IDE Configuration",
+    "directory": ".idea"
+  },
+  {
+    "path": "ACTUAL_ARCHITECTURE.md",
+    "absolute_path": "/home/user/ProSense/ACTUAL_ARCHITECTURE.md",
+    "size_bytes": 1360,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".md",
+    "category": "Documentation",
+    "directory": "root"
+  },
+  {
+    "path": "FEATURE_MAP.md",
+    "absolute_path": "/home/user/ProSense/FEATURE_MAP.md",
+    "size_bytes": 2387,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".md",
+    "category": "Documentation",
+    "directory": "root"
+  },
+  {
+    "path": "FEATURE_STATUS_MATRIX.md",
+    "absolute_path": "/home/user/ProSense/FEATURE_STATUS_MATRIX.md",
+    "size_bytes": 2510,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".md",
+    "category": "Documentation",
+    "directory": "root"
+  },
+  {
+    "path": "README.md",
+    "absolute_path": "/home/user/ProSense/README.md",
+    "size_bytes": 3260,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".md",
+    "category": "Documentation",
+    "directory": "root"
+  },
+  {
+    "path": "STABILIZATION_ROADMAP.md",
+    "absolute_path": "/home/user/ProSense/STABILIZATION_ROADMAP.md",
+    "size_bytes": 3397,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".md",
+    "category": "Documentation",
+    "directory": "root"
+  },
+  {
+    "path": "TECHNICAL_DEBT_REPORT.md",
+    "absolute_path": "/home/user/ProSense/TECHNICAL_DEBT_REPORT.md",
+    "size_bytes": 3399,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".md",
+    "category": "Documentation",
+    "directory": "root"
+  },
+  {
+    "path": "correlate_datasets.py",
+    "absolute_path": "/home/user/ProSense/correlate_datasets.py",
+    "size_bytes": 9364,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "root"
+  },
+  {
+    "path": "correlate_features.py",
+    "absolute_path": "/home/user/ProSense/correlate_features.py",
+    "size_bytes": 16262,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "root"
+  },
+  {
+    "path": "images/Slide30.JPG",
+    "absolute_path": "/home/user/ProSense/images/Slide30.JPG",
+    "size_bytes": 112501,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".JPG",
+    "category": "Image Asset",
+    "directory": "images"
+  },
+  {
+    "path": "images/Slide31.JPG",
+    "absolute_path": "/home/user/ProSense/images/Slide31.JPG",
+    "size_bytes": 190077,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".JPG",
+    "category": "Image Asset",
+    "directory": "images"
+  },
+  {
+    "path": "images/Slide35.JPG",
+    "absolute_path": "/home/user/ProSense/images/Slide35.JPG",
+    "size_bytes": 98742,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".JPG",
+    "category": "Image Asset",
+    "directory": "images"
+  },
+  {
+    "path": "images/Slide36.JPG",
+    "absolute_path": "/home/user/ProSense/images/Slide36.JPG",
+    "size_bytes": 111072,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".JPG",
+    "category": "Image Asset",
+    "directory": "images"
+  },
+  {
+    "path": "images/Slide37.JPG",
+    "absolute_path": "/home/user/ProSense/images/Slide37.JPG",
+    "size_bytes": 85952,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".JPG",
+    "category": "Image Asset",
+    "directory": "images"
+  },
+  {
+    "path": "images/Slide39.JPG",
+    "absolute_path": "/home/user/ProSense/images/Slide39.JPG",
+    "size_bytes": 91901,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".JPG",
+    "category": "Image Asset",
+    "directory": "images"
+  },
+  {
+    "path": "images/Slide40.JPG",
+    "absolute_path": "/home/user/ProSense/images/Slide40.JPG",
+    "size_bytes": 85884,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".JPG",
+    "category": "Image Asset",
+    "directory": "images"
+  },
+  {
+    "path": "images/Slide41.JPG",
+    "absolute_path": "/home/user/ProSense/images/Slide41.JPG",
+    "size_bytes": 123617,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".JPG",
+    "category": "Image Asset",
+    "directory": "images"
+  },
+  {
+    "path": "load_data.py",
+    "absolute_path": "/home/user/ProSense/load_data.py",
+    "size_bytes": 11679,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "root"
+  },
+  {
+    "path": "load_features.py",
+    "absolute_path": "/home/user/ProSense/load_features.py",
+    "size_bytes": 17198,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "root"
+  },
+  {
+    "path": "log_parser.py",
+    "absolute_path": "/home/user/ProSense/log_parser.py",
+    "size_bytes": 34652,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "root"
+  },
+  {
+    "path": "main.py",
+    "absolute_path": "/home/user/ProSense/main.py",
+    "size_bytes": 18988,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "root"
+  },
+  {
+    "path": "modalities/featex_acc.py",
+    "absolute_path": "/home/user/ProSense/modalities/featex_acc.py",
+    "size_bytes": 7197,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "modalities"
+  },
+  {
+    "path": "modalities/featex_bvp.py",
+    "absolute_path": "/home/user/ProSense/modalities/featex_bvp.py",
+    "size_bytes": 6918,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "modalities"
+  },
+  {
+    "path": "modalities/featex_eeg.py",
+    "absolute_path": "/home/user/ProSense/modalities/featex_eeg.py",
+    "size_bytes": 61556,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "modalities"
+  },
+  {
+    "path": "modalities/featex_gsr.py",
+    "absolute_path": "/home/user/ProSense/modalities/featex_gsr.py",
+    "size_bytes": 4487,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "modalities"
+  },
+  {
+    "path": "modalities/featex_gyro.py",
+    "absolute_path": "/home/user/ProSense/modalities/featex_gyro.py",
+    "size_bytes": 13498,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "modalities"
+  },
+  {
+    "path": "modalities/featex_ppg.py",
+    "absolute_path": "/home/user/ProSense/modalities/featex_ppg.py",
+    "size_bytes": 10635,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "modalities"
+  },
+  {
+    "path": "modalities/featex_temp.py",
+    "absolute_path": "/home/user/ProSense/modalities/featex_temp.py",
+    "size_bytes": 3914,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "modalities"
+  },
+  {
+    "path": "modalities/prepro_acc.py",
+    "absolute_path": "/home/user/ProSense/modalities/prepro_acc.py",
+    "size_bytes": 6598,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "modalities"
+  },
+  {
+    "path": "modalities/prepro_bvp.py",
+    "absolute_path": "/home/user/ProSense/modalities/prepro_bvp.py",
+    "size_bytes": 9697,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "modalities"
+  },
+  {
+    "path": "modalities/prepro_eeg.py",
+    "absolute_path": "/home/user/ProSense/modalities/prepro_eeg.py",
+    "size_bytes": 9362,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "modalities"
+  },
+  {
+    "path": "modalities/prepro_gsr.py",
+    "absolute_path": "/home/user/ProSense/modalities/prepro_gsr.py",
+    "size_bytes": 6065,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "modalities"
+  },
+  {
+    "path": "modalities/prepro_gyro.py",
+    "absolute_path": "/home/user/ProSense/modalities/prepro_gyro.py",
+    "size_bytes": 6246,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "modalities"
+  },
+  {
+    "path": "modalities/prepro_ppg.py",
+    "absolute_path": "/home/user/ProSense/modalities/prepro_ppg.py",
+    "size_bytes": 6338,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "modalities"
+  },
+  {
+    "path": "modalities/prepro_temp.py",
+    "absolute_path": "/home/user/ProSense/modalities/prepro_temp.py",
+    "size_bytes": 6223,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "modalities"
+  },
+  {
+    "path": "prepro_data.py",
+    "absolute_path": "/home/user/ProSense/prepro_data.py",
+    "size_bytes": 22681,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".py",
+    "category": "Source Code",
+    "directory": "root"
+  },
+  {
+    "path": "project_manifest.json",
+    "absolute_path": "/home/user/ProSense/project_manifest.json",
+    "size_bytes": 7784,
+    "last_modified_timestamp": 1762304373,
+    "last_modified": "2025-11-05 00:59:33",
+    "extension": ".json",
+    "category": "Configuration",
+    "directory": "root"
+  }
+]
