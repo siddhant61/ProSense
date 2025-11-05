@@ -1,3 +1,36 @@
+"""
+Gyroscope (GYRO) Feature Extraction Module
+
+This module provides comprehensive feature extraction capabilities for 3-axis gyroscope signals
+including time-domain, frequency-domain, angular velocity, orientation tracking, and spectral features.
+
+Gyroscope signals measure angular velocity (rate of rotation) in three axes (X, Y, Z), typically
+in units of degrees/second (°/s) or radians/second (rad/s). These signals capture rotational movements
+and orientation changes.
+
+Gyroscope features are useful for:
+- Rotation and orientation tracking
+- Gait analysis and balance assessment
+- Fall detection (sudden rotational changes)
+- Activity recognition (turning, twisting movements)
+- Gesture recognition
+- Head movement tracking (for VR/AR applications)
+- Tremor detection (Parkinson's disease)
+- Sports performance analysis (golf swing, tennis serve)
+
+Signal characteristics:
+- Static: Gyroscope reads ~0 when stationary (no rotation)
+- Dynamic: Non-zero values indicate rotation rate
+- Angular velocity magnitude: Overall rotation intensity
+- Zero-crossing rate: Frequency of direction changes
+
+Classes:
+    FeatExGYRO: Main feature extraction class for 3-axis gyroscope signals
+
+Author: ProSense Contributors
+Date: 2024
+"""
+
 import numpy as np
 import pandas as pd
 from scipy.fft import rfft
@@ -6,10 +39,48 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 class FeatExGYRO:
+    """
+    Feature extraction class for 3-axis Gyroscope (GYRO) data.
+
+    Extracts time-domain, frequency-domain, angular velocity, orientation,
+    and spectral features from preprocessed gyroscope epochs for rotation
+    and movement analysis.
+
+    Attributes:
+        dataset (dict): Preprocessed gyroscope dataset with epochs
+
+    Example:
+        >>> featex = FeatExGYRO(preprocessed_gyro_data)
+        >>> features = featex.extract_features()
+        >>> print(features['stream_1']['angular_velocity'][0])
+    """
     def __init__(self, dataset):
+        """
+        Initialize GYRO feature extractor.
+
+        Args:
+            dataset (dict): Preprocessed dataset with structure:
+                {stream_id: {'epochs': [epoch_dataframes], 'sfreq': float}}
+        """
         self.dataset = dataset
 
     def extract_time_domain_features(self, epochs):
+        """
+        Extract statistical time-domain features from each gyroscope axis.
+
+        Args:
+            epochs (list): List of gyroscope epoch DataFrames (3 columns: X, Y, Z)
+
+        Returns:
+            dict: Features for each epoch and axis
+
+        Features per axis:
+            - mean: Average angular velocity (bias/drift)
+            - std: Rotation variability (movement intensity)
+            - min/max: Range of rotational motion
+            - skew: Asymmetry of rotation
+            - kurtosis: Peakedness (sudden vs gradual turns)
+        """
         features = {}
         for i, epoch in enumerate(epochs):
             features[i] = {}
@@ -37,6 +108,22 @@ class FeatExGYRO:
         return features
 
     def calculate_angular_velocity_magnitude(self, epochs):
+        """
+        Calculate overall angular velocity magnitude across all axes.
+
+        Angular velocity magnitude = sqrt(x² + y² + z²), representing total
+        rotation intensity regardless of direction.
+
+        Args:
+            epochs (list): List of gyroscope epoch DataFrames
+
+        Returns:
+            dict: Angular velocity magnitude and rate of change per epoch
+
+        Note:
+            - Higher magnitude = more intense rotational movement
+            - Useful for detecting turning, spinning, or head rotation
+        """
         features = {}
         for i, epoch in enumerate(epochs):
             angular_velocity = np.sqrt((epoch ** 2).sum(axis=1))
@@ -49,6 +136,20 @@ class FeatExGYRO:
         return features
 
     def calculate_zero_crossing_rate(self, epochs):
+        """
+        Calculate zero-crossing rate - frequency of direction reversals.
+
+        Args:
+            epochs (list): List of gyroscope epoch DataFrames
+
+        Returns:
+            dict: Zero-crossing count per epoch and axis
+
+        Note:
+            - High zero-crossing rate = frequent direction changes
+            - Indicates oscillatory or tremor-like movements
+            - Useful for detecting Parkinson's tremor
+        """
         features = {}
         for i, epoch in enumerate(epochs):
             features[i] = {}
@@ -98,6 +199,23 @@ class FeatExGYRO:
         return features
 
     def extract_features(self):
+        """
+        Extract comprehensive gyroscope features from all epochs.
+
+        Main entry point for GYRO feature extraction. Processes all streams to extract
+        time-domain, frequency-domain, angular velocity, orientation, and spectral features.
+
+        Returns:
+            dict: Features for each stream with structure:
+                {stream_id: {
+                    'time_features': {epoch_idx: {'x': {...}, 'y': {...}, 'z': {...}}},
+                    'freq_features': {epoch_idx: {'x': {...}, 'y': {...}, 'z': {...}}},
+                    'angular_velocity': {epoch_idx: {...}},
+                    'orientation_change': {epoch_idx: {...}} or None,
+                    'spectral_energy': {epoch_idx: {'x': {...}, 'y': {...}, 'z': {...}}},
+                    'zero_crossing_rate': {epoch_idx: {'x': {...}, 'y': {...}, 'z': {...}}}
+                }}
+        """
         all_features = {}
         for stream, data_info in self.dataset.items():
             epochs = data_info['epochs']
