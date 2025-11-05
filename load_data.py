@@ -107,13 +107,13 @@ class LoadData:
         if not isinstance(data, pd.DataFrame):
             raise TypeError(f"Expected pandas DataFrame, got {type(data).__name__}")
 
+        if data.empty:
+            raise ValueError("DataFrame is empty")
+
         if len(data) < min_rows:
             raise ValueError(
                 f"DataFrame has insufficient data: {len(data)} rows (minimum: {min_rows})"
             )
-
-        if data.empty:
-            raise ValueError("DataFrame is empty")
 
         if required_columns:
             missing_cols = set(required_columns) - set(data.columns)
@@ -138,21 +138,25 @@ class LoadData:
         if len(timestamps) == 0:
             raise ValueError("Timestamp array is empty")
 
-        # Check for NaN or None values
-        if pd.isna(timestamps).any():
-            raise ValueError("Timestamps contain NaN or None values")
+        # Convert to numpy array for consistent handling
+        if isinstance(timestamps, pd.Series):
+            timestamps_array = timestamps.values
+        elif isinstance(timestamps, np.ndarray):
+            timestamps_array = timestamps
+        else:
+            timestamps_array = np.array(timestamps)
 
         # Check if timestamps are numeric
-        try:
-            timestamps_numeric = pd.to_numeric(timestamps, errors='coerce')
-            if timestamps_numeric.isna().any():
-                raise ValueError("Timestamps contain non-numeric values")
-        except Exception as e:
-            raise ValueError(f"Invalid timestamp format: {e}")
+        if not np.issubdtype(timestamps_array.dtype, np.number):
+            raise ValueError("Timestamps contain non-numeric values")
+
+        # Check for NaN or None values (only for numeric types)
+        if np.any(np.isnan(timestamps_array)):
+            raise ValueError("Timestamps contain NaN or None values")
 
         # Check if timestamps are monotonically increasing
         if check_monotonic:
-            if not np.all(np.diff(timestamps) > 0):
+            if not np.all(np.diff(timestamps_array) > 0):
                 raise ValueError("Timestamps are not monotonically increasing")
 
         return True
@@ -177,14 +181,14 @@ class LoadData:
         except (TypeError, ValueError):
             raise ValueError(f"Invalid sampling rate type: {type(sfreq).__name__}")
 
+        if sfreq <= 0:
+            raise ValueError(f"Sampling rate must be positive, got {sfreq}")
+
         if not (min_sfreq <= sfreq <= max_sfreq):
             raise ValueError(
                 f"Sampling rate {sfreq} Hz is outside valid range "
                 f"[{min_sfreq}, {max_sfreq}] Hz"
             )
-
-        if sfreq <= 0:
-            raise ValueError(f"Sampling rate must be positive, got {sfreq}")
 
         return True
 
