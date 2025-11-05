@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import pickle
+import mne
 
 from load_data import LoadData
 
@@ -598,3 +599,250 @@ class TestLoadDataSignalProcessing:
         # Verify all channels have same length
         lengths = [len(v) for v in sliced.values()]
         assert len(set(lengths)) == 1  # All same length
+
+
+class TestLoadDataMneConversion:
+    """Test suite for MNE conversion functions."""
+
+    @pytest.fixture
+    def loader(self):
+        """Create a LoadData instance."""
+        return LoadData()
+
+    @pytest.mark.unit
+    def test_convert_to_mne_basic(self, loader):
+        """Test basic data conversion to MNE format."""
+        # Create sample EEG data (4 channels, 1000 samples)
+        n_channels = 4
+        n_samples = 1000
+        sfreq = 256.0
+
+        data = np.random.randn(n_channels, n_samples)
+
+        # Convert to MNE
+        mne_raw = loader.convert_to_mne(data, sfreq)
+
+        # Verify it's an MNE Raw object
+        assert isinstance(mne_raw, mne.io.RawArray)
+
+        # Verify channel names
+        assert mne_raw.ch_names == ["AF7", "AF8", "TP9", "TP10"]
+
+        # Verify sampling frequency
+        assert mne_raw.info['sfreq'] == sfreq
+
+        # Verify data shape
+        assert mne_raw.get_data().shape == (n_channels, n_samples)
+
+    @pytest.mark.unit
+    def test_convert_to_mne_data_preservation(self, loader):
+        """Test that data values are preserved during MNE conversion."""
+        n_channels = 4
+        n_samples = 100
+        sfreq = 256.0
+
+        # Create data with known values
+        data = np.array([
+            [1.0] * n_samples,  # AF7: all 1.0
+            [2.0] * n_samples,  # AF8: all 2.0
+            [3.0] * n_samples,  # TP9: all 3.0
+            [4.0] * n_samples   # TP10: all 4.0
+        ])
+
+        mne_raw = loader.convert_to_mne(data, sfreq)
+        converted_data = mne_raw.get_data()
+
+        # Verify data values are preserved
+        np.testing.assert_array_almost_equal(converted_data, data)
+
+
+class TestLoadDataFormatDataset:
+    """Test suite for format_dataset function."""
+
+    @pytest.fixture
+    def loader(self):
+        """Create a LoadData instance."""
+        return LoadData()
+
+    @pytest.fixture
+    def sample_pickle_file(self, tmp_path):
+        """Create a sample pickle file with EEG data."""
+        # Create sample DataFrame with proper structure
+        n_samples = 1000
+        sfreq = 250.0  # 250 Hz
+
+        # Create numeric timestamps (seconds)
+        timestamps = np.arange(n_samples) / sfreq
+
+        df = pd.DataFrame({
+            'RAW_AF7': np.random.randn(n_samples),
+            'RAW_AF8': np.random.randn(n_samples),
+            'RAW_TP9': np.random.randn(n_samples),
+            'RAW_TP10': np.random.randn(n_samples),
+            'R_AUX': np.zeros(n_samples)  # Auxiliary channel to be dropped
+        }, index=timestamps)
+
+        # Save to pickle file
+        pkl_file = tmp_path / "test_eeg_data.pkl"
+        df.to_pickle(pkl_file)
+
+        return pkl_file
+
+    @pytest.mark.unit
+    def test_format_dataset_basic(self, loader, sample_pickle_file):
+        """Test basic dataset formatting from pickle file."""
+        dataset = loader.format_dataset(str(sample_pickle_file))
+
+        # Check structure
+        assert isinstance(dataset, dict)
+        assert len(dataset) == 1
+
+        # Get the dataset entry
+        dataset_name = list(dataset.keys())[0]
+        assert dataset_name == "test_eeg_data"
+
+        # Check dataset contents
+        assert 'data' in dataset[dataset_name]
+        assert 'sfreq' in dataset[dataset_name]
+
+        # Verify MNE object
+        assert isinstance(dataset[dataset_name]['data'], mne.io.RawArray)
+
+        # Verify channel names (R_AUX should be dropped)
+        assert len(dataset[dataset_name]['data'].ch_names) == 4
+        assert set(dataset[dataset_name]['data'].ch_names) == {'AF7', 'AF8', 'TP9', 'TP10'}
+
+    @pytest.mark.unit
+    def test_format_dataset_drops_aux_channel(self, loader, tmp_path):
+        """Test that R_AUX channel is dropped during formatting."""
+        # Create DataFrame with R_AUX
+        n_samples = 500
+        sfreq = 250.0
+        timestamps = np.arange(n_samples) / sfreq
+
+        df = pd.DataFrame({
+            'RAW_AF7': np.random.randn(n_samples),
+            'RAW_AF8': np.random.randn(n_samples),
+            'RAW_TP9': np.random.randn(n_samples),
+            'RAW_TP10': np.random.randn(n_samples),
+            'R_AUX': np.random.randn(n_samples)
+        }, index=timestamps)
+
+        pkl_file = tmp_path / "test_with_aux.pkl"
+        df.to_pickle(pkl_file)
+
+        dataset = loader.format_dataset(str(pkl_file))
+
+        # Verify R_AUX was dropped
+        dataset_name = list(dataset.keys())[0]
+        mne_data = dataset[dataset_name]['data']
+        assert 'R_AUX' not in mne_data.ch_names
+        assert len(mne_data.ch_names) == 4
+
+    @pytest.mark.unit
+    def test_format_dataset_calculates_sfreq(self, loader, sample_pickle_file):
+        """Test that sampling frequency is calculated correctly."""
+        dataset = loader.format_dataset(str(sample_pickle_file))
+
+        dataset_name = list(dataset.keys())[0]
+        sfreq = dataset[dataset_name]['sfreq']
+
+        # Should be approximately 250 Hz (4ms intervals)
+        assert isinstance(sfreq, (int, float))
+        assert 240 < sfreq < 260  # Allow some tolerance
+
+    @pytest.mark.unit
+    def test_format_dataset_invalid_not_dataframe(self, loader, tmp_path):
+        """Test that format_dataset raises error for non-DataFrame data."""
+        # Save a non-DataFrame to pickle
+        invalid_file = tmp_path / "invalid.pkl"
+        with open(invalid_file, 'wb') as f:
+            pickle.dump({'not': 'a dataframe'}, f)
+
+        with pytest.raises(ValueError, match="not a pandas DataFrame"):
+            loader.format_dataset(str(invalid_file))
+
+    @pytest.mark.unit
+    def test_format_dataset_unnamed_columns(self, loader, tmp_path):
+        """Test format_dataset with unnamed (numeric) columns."""
+        # Create DataFrame with unnamed columns (RangeIndex)
+        n_samples = 500
+        sfreq = 250.0
+        timestamps = np.arange(n_samples) / sfreq
+
+        # Create DataFrame without named columns
+        df = pd.DataFrame(
+            np.random.randn(n_samples, 5),  # 5 columns: 4 EEG + 1 AUX
+            index=timestamps
+        )
+
+        pkl_file = tmp_path / "unnamed_cols.pkl"
+        df.to_pickle(pkl_file)
+
+        dataset = loader.format_dataset(str(pkl_file))
+
+        # Should successfully name columns and process
+        dataset_name = list(dataset.keys())[0]
+        mne_data = dataset[dataset_name]['data']
+        assert len(mne_data.ch_names) == 4
+
+    @pytest.mark.unit
+    def test_format_dataset_wrong_column_count(self, loader, tmp_path):
+        """Test format_dataset raises error for wrong number of columns."""
+        # Create DataFrame with wrong number of columns (not 5)
+        n_samples = 500
+        sfreq = 250.0
+        timestamps = np.arange(n_samples) / sfreq
+
+        df = pd.DataFrame(
+            np.random.randn(n_samples, 3),  # Wrong: only 3 columns instead of 5
+            index=timestamps
+        )
+
+        pkl_file = tmp_path / "wrong_cols.pkl"
+        df.to_pickle(pkl_file)
+
+        with pytest.raises(ValueError, match="columns.*expected"):
+            loader.format_dataset(str(pkl_file))
+
+    @pytest.mark.unit
+    def test_format_dataset_wrong_column_names(self, loader, tmp_path):
+        """Test format_dataset raises error for wrong column names."""
+        # Create DataFrame with wrong column names
+        n_samples = 500
+        sfreq = 250.0
+        timestamps = np.arange(n_samples) / sfreq
+
+        df = pd.DataFrame({
+            'WRONG_1': np.random.randn(n_samples),
+            'WRONG_2': np.random.randn(n_samples),
+            'WRONG_3': np.random.randn(n_samples),
+            'WRONG_4': np.random.randn(n_samples),
+        }, index=timestamps)
+
+        pkl_file = tmp_path / "wrong_names.pkl"
+        df.to_pickle(pkl_file)
+
+        with pytest.raises(ValueError, match="don't match expected channels"):
+            loader.format_dataset(str(pkl_file))
+
+    @pytest.mark.unit
+    def test_format_dataset_none_sfreq(self, loader, tmp_path):
+        """Test format_dataset raises error when timestamps are invalid."""
+        # Create DataFrame with invalid timestamps (all same value)
+        n_samples = 500
+        timestamps = np.zeros(n_samples)  # All zeros - not monotonically increasing
+
+        df = pd.DataFrame({
+            'RAW_AF7': np.random.randn(n_samples),
+            'RAW_AF8': np.random.randn(n_samples),
+            'RAW_TP9': np.random.randn(n_samples),
+            'RAW_TP10': np.random.randn(n_samples),
+        }, index=timestamps)
+
+        pkl_file = tmp_path / "invalid_ts.pkl"
+        df.to_pickle(pkl_file)
+
+        # Should raise error about non-monotonic timestamps
+        with pytest.raises(ValueError, match="Timestamps are not monotonically increasing"):
+            loader.format_dataset(str(pkl_file))
