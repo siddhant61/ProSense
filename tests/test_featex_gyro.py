@@ -232,3 +232,104 @@ class TestFeatExGYROIntegration:
         for axis in ['x', 'y', 'z']:
             mean_val = features['stream_1']['time_features'][0][axis]['mean']
             assert abs(mean_val) < 5.0  # Should be close to zero with only noise
+
+    @pytest.mark.unit
+    def test_infer_sensor_location(self):
+        """Test sensor location inference from stream ID."""
+        featex = FeatExGYRO({})
+
+        # Test Muse sensor (should be 'head')
+        location = featex.infer_sensor_location('Muses-ABCD_gyro')
+        assert location == 'head'
+
+        location = featex.infer_sensor_location('muse-1234_gyro')
+        assert location == 'head'
+
+        # Test other sensors (default to 'head' for now)
+        location = featex.infer_sensor_location('empatica_e4_gyro')
+        assert location == 'head'
+
+    @pytest.mark.unit
+    def test_location_specific_feature(self, rotation_data):
+        """Test location-specific feature extraction."""
+        featex = FeatExGYRO(rotation_data)
+        epochs = rotation_data['stream_1']['epochs']
+
+        # Test with 'head' location (should call track_orientation_angles)
+        features = featex.location_specific_feature(epochs, 'head')
+        assert features is not None
+        assert isinstance(features, dict)
+        assert 0 in features
+        assert 'orientation_change' in features[0]
+        assert 'rate_of_change' in features[0]
+
+        # Test with 'unknown' location
+        features = featex.location_specific_feature(epochs, 'unknown')
+        assert features is None
+
+    @pytest.mark.unit
+    def test_track_orientation_angles(self, rotation_data):
+        """Test orientation angle tracking."""
+        featex = FeatExGYRO(rotation_data)
+        epochs = rotation_data['stream_1']['epochs']
+
+        features = featex.track_orientation_angles(epochs)
+
+        assert isinstance(features, dict)
+        assert len(features) == 3
+
+        # Check structure for each epoch
+        for epoch_idx in range(3):
+            assert 'orientation_change' in features[epoch_idx]
+            assert 'rate_of_change' in features[epoch_idx]
+            assert 'overall_orientation_change' in features[epoch_idx]['orientation_change']
+            assert 'rate_of_change_orientation' in features[epoch_idx]['rate_of_change']
+
+    @pytest.mark.integration
+    def test_plot_features(self, rotation_data, monkeypatch):
+        """Test plotting features with plot_type='ind'."""
+        import matplotlib.pyplot as plt
+        monkeypatch.setattr(plt, 'show', lambda: None)
+
+        featex = FeatExGYRO(rotation_data)
+        features = featex.extract_features()
+
+        # Test plot generation with 'ind' type
+        plots = featex.plot_features(features, plot_type='ind')
+
+        assert isinstance(plots, dict)
+        assert 'stream_1' in plots
+        assert isinstance(plots['stream_1'], list)
+        assert len(plots['stream_1']) > 0
+
+        # Close all figures
+        for stream_plots in plots.values():
+            for plot_item in stream_plots:
+                if isinstance(plot_item, tuple):
+                    figs, titles = plot_item
+                    for fig in figs:
+                        plt.close(fig)
+
+    @pytest.mark.integration
+    def test_plot_features_all_type(self, rotation_data, monkeypatch):
+        """Test plotting features with plot_type='all'."""
+        import matplotlib.pyplot as plt
+        monkeypatch.setattr(plt, 'show', lambda: None)
+
+        featex = FeatExGYRO(rotation_data)
+        features = featex.extract_features()
+
+        # Test plot generation with 'all' type
+        plots = featex.plot_features(features, plot_type='all')
+
+        assert isinstance(plots, dict)
+        assert 'stream_1' in plots
+        assert len(plots['stream_1']) > 0
+
+        # Close all figures
+        for stream_plots in plots.values():
+            for plot_item in stream_plots:
+                if isinstance(plot_item, tuple):
+                    figs, titles = plot_item
+                    for fig in figs:
+                        plt.close(fig)
