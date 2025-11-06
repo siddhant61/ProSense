@@ -180,3 +180,60 @@ class TestPreProTEMPIntegration:
             first_epoch = stream_data['epochs'][0]
             # At 4 Hz, 120 seconds should have ~480 samples
             assert len(first_epoch) > 200  # At least substantial data
+
+    @pytest.mark.unit
+    def test_calculate_sampling_frequency_basic(self, sample_temp_data, sample_dataset):
+        """Test basic sampling frequency calculation."""
+        prepro = PreProTEMP(sample_dataset)
+        sfreq = prepro.calculate_sampling_frequency(sample_temp_data)
+
+        # Should be close to 4 Hz
+        assert 3.5 < sfreq < 4.5
+
+    @pytest.mark.unit
+    def test_calculate_sampling_frequency_invalid_index(self, sample_dataset):
+        """Test sampling frequency calculation with non-datetime index."""
+        prepro = PreProTEMP(sample_dataset)
+
+        # Create data with non-datetime index
+        data = pd.DataFrame({'TEMP': [32.0, 32.1, 32.2]})
+
+        with pytest.raises(ValueError, match="DatetimeIndex"):
+            prepro.calculate_sampling_frequency(data)
+
+    @pytest.mark.unit
+    def test_calculate_sampling_frequency_insufficient_data(self, sample_dataset):
+        """Test sampling frequency calculation with too few data points."""
+        prepro = PreProTEMP(sample_dataset)
+
+        # Create data with only 1 sample
+        timestamps = pd.date_range('2024-01-01', periods=1, freq='1s')
+        data = pd.DataFrame({'TEMP': [32.0]}, index=timestamps)
+
+        with pytest.raises(ValueError, match="enough data points"):
+            prepro.calculate_sampling_frequency(data)
+
+    @pytest.mark.unit
+    def test_downsample_data(self, sample_temp_data, sample_dataset):
+        """Test downsampling from higher to lower frequency."""
+        prepro = PreProTEMP(sample_dataset)
+
+        # Downsample from 4 Hz to 2 Hz
+        downsampled = prepro.downsample_data(sample_temp_data, original_sfreq=4, target_sfreq=2)
+
+        # Should have approximately half the samples
+        assert len(downsampled) < len(sample_temp_data)
+        assert len(downsampled) > len(sample_temp_data) * 0.4  # Allow some variance
+
+    @pytest.mark.unit
+    def test_downsample_data_no_change(self, sample_temp_data, sample_dataset):
+        """Test downsampling when target >= original (should return unchanged)."""
+        prepro = PreProTEMP(sample_dataset)
+
+        # Target is same as original - should return same data
+        result = prepro.downsample_data(sample_temp_data, original_sfreq=4, target_sfreq=4)
+        assert len(result) == len(sample_temp_data)
+
+        # Target is higher - should return same data
+        result = prepro.downsample_data(sample_temp_data, original_sfreq=4, target_sfreq=8)
+        assert len(result) == len(sample_temp_data)
