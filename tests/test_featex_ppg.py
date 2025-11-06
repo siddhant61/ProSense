@@ -130,6 +130,53 @@ class TestFeatExPPG:
         # Check we have features for all epochs
         assert len(stream_features['hr_features']) == 2
 
+    @pytest.mark.unit
+    def test_infer_sensor_location(self):
+        """Test sensor location inference from stream ID."""
+        featex = FeatExPPG({})
+
+        # Test Muse sensor (should be 'head')
+        location = featex.infer_sensor_location('Muses-ABCD_ppg')
+        assert location == 'head'
+
+        location = featex.infer_sensor_location('muse-1234_ppg')
+        assert location == 'head'
+
+        # Test unknown sensor
+        location = featex.infer_sensor_location('empatica_e4_ppg')
+        assert location == 'unknown'
+
+    @pytest.mark.unit
+    def test_location_specific_feature(self, sample_ppg_epochs):
+        """Test location-specific feature extraction."""
+        featex = FeatExPPG({})
+
+        # Test with 'head' location
+        features = featex.location_specific_feature(sample_ppg_epochs, 'head')
+        assert features is not None
+        assert isinstance(features, dict)
+
+        # Test with 'unknown' location
+        features = featex.location_specific_feature(sample_ppg_epochs, 'unknown')
+        assert features is None
+
+    @pytest.mark.unit
+    def test_calculate_head_blood_flow(self, sample_ppg_epochs):
+        """Test head blood flow calculation."""
+        featex = FeatExPPG({})
+        features = featex.calculate_head_blood_flow(sample_ppg_epochs)
+
+        assert isinstance(features, dict)
+        assert len(features) == 2
+
+        for epoch_idx in range(2):
+            for channel in ['PPG1', 'PPG2', 'PPG3']:
+                assert channel in features[epoch_idx]
+                assert 'head_blood_flow' in features[epoch_idx][channel]
+                # Value could be NaN or a number
+                value = features[epoch_idx][channel]['head_blood_flow']
+                assert isinstance(value, (int, float, np.number))
+
 
 class TestFeatExPPGIntegration:
     """Integration tests for FeatExPPG."""
@@ -184,3 +231,48 @@ class TestFeatExPPGIntegration:
                 assert amp > 0
                 # Amplitude should be reasonable (within 10x of each other)
                 assert 5 < amp < 100
+
+    @pytest.mark.integration
+    def test_extract_prv_too_few_peaks(self):
+        """Test PRV extraction when too few peaks are detected."""
+        # Create epoch with very few samples (insufficient for peak detection)
+        n_samples = 10  # Very short epoch
+        timestamps = pd.date_range('2024-01-01', periods=n_samples, freq='15.625ms')
+        data = np.random.randn(n_samples) * 2  # Random noise, no clear peaks
+
+        epoch = pd.DataFrame({
+            'PPG1': data,
+            'PPG2': data,
+            'PPG3': data
+        }, index=timestamps)
+
+        featex = FeatExPPG({})
+        features = featex.extract_prv([epoch], sfreq=64)
+
+        assert isinstance(features, dict)
+        assert 0 in features
+        # Should return None for PRV when too few peaks
+        for channel in ['PPG1', 'PPG2', 'PPG3']:
+            assert 'prv' in features[0][channel]
+
+    @pytest.mark.integration
+    def test_calculate_head_blood_flow_no_peaks(self):
+        """Test head blood flow calculation when no peaks are detected."""
+        # Create epoch with flat signal (no peaks)
+        n_samples = 320
+        timestamps = pd.date_range('2024-01-01', periods=n_samples, freq='15.625ms')
+        data = np.ones(n_samples) * 100  # Flat signal
+
+        epoch = pd.DataFrame({
+            'PPG1': data,
+            'PPG2': data,
+            'PPG3': data
+        }, index=timestamps)
+
+        featex = FeatExPPG({})
+        features = featex.calculate_head_blood_flow([epoch])
+
+        assert isinstance(features, dict)
+        # Should return NaN when no peaks detected
+        for channel in ['PPG1', 'PPG2', 'PPG3']:
+            assert 'head_blood_flow' in features[0][channel]
