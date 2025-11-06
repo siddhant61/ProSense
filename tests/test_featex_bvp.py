@@ -273,3 +273,25 @@ class TestFeatExBVPIntegration:
 
             # Range should be reasonable
             assert feat['max'] - feat['min'] < 100
+
+    @pytest.mark.integration
+    def test_plot_features_over_time(self, realistic_bvp_data, monkeypatch):
+        """Test plotting features over time with timestamps."""
+        import matplotlib.pyplot as plt
+        monkeypatch.setattr(plt, 'show', lambda: None)
+
+        featex = FeatExBVP(realistic_bvp_data)
+        features = featex.extract_features()
+
+        # Test plot generation over time
+        figs, titles = featex.plot_features_over_time(features, epoch_duration=5)
+
+        # Should have 4 figures (time, freq, hrv, hr)
+        assert isinstance(figs, list)
+        assert isinstance(titles, list)
+        assert len(figs) == 4
+        assert len(titles) == 4
+
+        # Close all figures
+        for fig in figs:
+            plt.close(fig)
