@@ -283,3 +283,63 @@ class TestPreProEEGIntegration:
 
         assert result is not None
         assert 'data' in result['stream_1']
+
+    @pytest.mark.unit
+    def test_apply_rereferencing(self):
+        """Test re-referencing with R_AUX channel."""
+        # Create EEG data with R_AUX reference channel
+        n_channels = 5
+        n_times = 1000
+        sfreq = 256
+
+        data = np.random.randn(n_channels, n_times) * 50
+        ch_names = ['AF7', 'AF8', 'TP9', 'TP10', 'R_AUX']
+        ch_types = ['eeg'] * n_channels
+
+        info = mne.create_info(ch_names=ch_names, sfreq=sfreq, ch_types=ch_types)
+        raw = mne.io.RawArray(data, info)
+
+        dataset = {
+            'stream_1': {
+                'data': raw,
+                'sfreq': sfreq
+            }
+        }
+
+        prepro = PreProEEG(dataset)
+        result = prepro.apply_rereferencing(ref_channel='R_AUX')
+
+        assert result is not None
+        assert 'stream_1' in result
+        # R_AUX should be excluded from the re-referenced data
+        assert 'R_AUX' not in result['stream_1']['data'].ch_names
+
+    @pytest.mark.unit
+    def test_apply_rereferencing_no_ref_channel(self):
+        """Test re-referencing when reference channel doesn't exist."""
+        # Create EEG data without R_AUX reference channel
+        n_channels = 4
+        n_times = 1000
+        sfreq = 256
+
+        data = np.random.randn(n_channels, n_times) * 50
+        ch_names = ['AF7', 'AF8', 'TP9', 'TP10']
+        ch_types = ['eeg'] * n_channels
+
+        info = mne.create_info(ch_names=ch_names, sfreq=sfreq, ch_types=ch_types)
+        raw = mne.io.RawArray(data, info)
+
+        dataset = {
+            'stream_1': {
+                'data': raw,
+                'sfreq': sfreq
+            }
+        }
+
+        prepro = PreProEEG(dataset)
+        result = prepro.apply_rereferencing(ref_channel='R_AUX')
+
+        # Should return dataset unchanged since R_AUX doesn't exist
+        assert result is not None
+        assert 'stream_1' in result
+        assert len(result['stream_1']['data'].ch_names) == 4
