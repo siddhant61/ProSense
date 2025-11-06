@@ -230,3 +230,24 @@ class TestFeatExACCIntegration:
         y_mean = features['stream_1']['time_features'][0]['y']['mean']
         assert abs(x_mean) < 1.0
         assert abs(y_mean) < 1.0
+
+    @pytest.mark.integration
+    def test_plot_features_over_epoch(self, activity_data, monkeypatch):
+        """Test plotting features over epochs."""
+        import matplotlib.pyplot as plt
+        monkeypatch.setattr(plt, 'show', lambda: None)
+
+        featex = FeatExACC(activity_data)
+        features = featex.extract_features()
+
+        # Test plot generation
+        figs, titles = featex.plot_features_over_epoch(features)
+
+        assert isinstance(figs, list)
+        assert isinstance(titles, list)
+        assert len(figs) == len(titles)
+        assert len(figs) > 0  # Should have generated at least one plot
+
+        # Close all figures to avoid memory issues
+        for fig in figs:
+            plt.close(fig)
